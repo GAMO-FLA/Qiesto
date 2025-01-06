@@ -19,7 +19,7 @@ export const SearchBar = () => {
           </h2>
           <div className="relative group">
             <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 to-primary/10 rounded-lg blur opacity-0 group-hover:opacity-100 transition duration-300" />
-            <div className="relative flex gap-3 bg-white rounded-lg p-1 shadow-sm">
+            <div className="relative flex gap-3 bg-white rounded-lg p-1 shadow-lg">
               <div className="relative flex-1">
                 <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
                 <Input
