@@ -1,186 +1,198 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Search, Filter, Code2, GitBranch, Star, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-
-interface Project {
-  title: string;
-  description: string;
-  technologies: string[];
-  thumbnail: string;
-  author: string;
-  likes: number;
-  submittedTo: string;
-  date: string;
-}
+import { Button } from '@/components/ui/button';
+import { Star, Users, Eye, ArrowRight, Sparkles, Github, ExternalLink } from 'lucide-react';
 
 const Projects = () => {
-  const [activeFilter, setActiveFilter] = useState('all');
-  
-  const projects: Project[] = [
+  const projects = [
     {
-      title: "Smart City Traffic Management",
-      description: "An AI-powered solution for optimizing traffic flow in Kigali using computer vision and machine learning algorithms.",
-      technologies: ["Python", "TensorFlow", "OpenCV", "React"],
-      thumbnail: "/lovable-uploads/e2721391-268f-467e-a649-b1423b9e99d5.png",
-      author: "Team RwandaTech",
-      likes: 245,
-      submittedTo: "Smart Cities Innovation Challenge",
-      date: "2024-02-15"
+      title: "Smart Waste Management",
+      creator: "Team Innovate",
+      description: "An IoT-based solution for efficient waste collection and management in Kigali.",
+      image: "/lovable-uploads/e2721391-268f-467e-a649-b1423b9e99d5.png",
+      category: "IoT",
+      featured: true,
+      views: 1250,
+      likes: 328,
+      contributors: 5,
+      demoUrl: "https://demo.example.com",
+      githubUrl: "https://github.com/example",
     },
-    // Add more projects...
-  ];
-
-  const categories = [
-    { id: 'all', label: 'All Projects', count: 156 },
-    { id: 'featured', label: 'Featured', count: 24 },
-    { id: 'trending', label: 'Trending', count: 32 },
-    { id: 'recent', label: 'Recent', count: 48 },
+    {
+      title: "FinTech Payment Gateway",
+      creator: "RwandaPay Team",
+      description: "A secure and efficient payment processing system for East African markets.",
+      image: "/lovable-uploads/e2721391-268f-467e-a649-b1423b9e99d5.png",
+      category: "FinTech",
+      featured: true,
+      views: 980,
+      likes: 245,
+      contributors: 4,
+      demoUrl: "https://demo.example.com",
+      githubUrl: "https://github.com/example",
+    },
+    {
+      title: "Urban Mobility Tracker",
+      creator: "City Solutions",
+      description: "Real-time tracking and analytics for public transportation in Kigali.",
+      image: "/lovable-uploads/e2721391-268f-467e-a649-b1423b9e99d5.png",
+      category: "Smart City",
+      featured: false,
+      views: 756,
+      likes: 189,
+      contributors: 3,
+      demoUrl: "https://demo.example.com",
+      githubUrl: "https://github.com/example",
+    },
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       <Header />
       
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-gray-900 to-gray-800 pt-32 pb-20 overflow-hidden">
+      <section className="pt-32 pb-20 relative overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
         <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -left-1/4 -top-1/4 w-1/2 h-1/2 bg-primary/10 rounded-full blur-3xl" />
-          <div className="absolute -right-1/4 -bottom-1/4 w-1/2 h-1/2 bg-primary/5 rounded-full blur-3xl" />
-        </div>
-        
-        <div className="container relative z-10">
-          <div className="max-w-2xl mx-auto text-center mb-12">
-            <motion.h1 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="text-4xl md:text-5xl font-bold text-white mb-6"
-            >
-              Explore Innovative Projects
-            </motion.h1>
-            <motion.p 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="text-xl text-gray-300"
-            >
-              Discover groundbreaking solutions built by Rwanda's tech community
-            </motion.p>
+          <div className="absolute w-full h-full">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.5 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 1 }}
+              className="absolute -left-1/4 -top-1/4 w-1/2 h-1/2 bg-primary/30 rounded-full blur-3xl"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.5 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 1, delay: 0.2 }}
+              className="absolute -right-1/4 -bottom-1/4 w-1/2 h-1/2 bg-blue-500/20 rounded-full blur-3xl"
+            />
           </div>
+        </div>
 
-          {/* Search and Filter Bar */}
-          <motion.div 
+        <div className="container mx-auto px-4 relative z-10">
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="max-w-4xl mx-auto"
+            className="max-w-3xl mx-auto text-center"
           >
-            <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-4 shadow-lg">
-              <div className="flex flex-col md:flex-row gap-4">
-                <div className="relative flex-1">
-                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                  <Input 
-                    placeholder="Search projects by title, technology, or author..." 
-                    className="pl-12 bg-white/10 border-white/20 text-white placeholder:text-gray-400"
-                  />
-                </div>
-                <Button className="bg-primary hover:bg-primary/90">
-                  <Filter className="w-4 h-4 mr-2" />
-                  Filters
-                </Button>
-              </div>
-            </div>
+            <Badge 
+              variant="secondary" 
+              className="bg-white/10 text-white border-white/20 backdrop-blur-sm mb-6"
+            >
+              <Sparkles className="w-4 h-4 mr-2" />
+              Innovation Showcase
+            </Badge>
+            <h1 className="text-4xl md:text-5xl font-bold text-white mb-6">
+              Discover Amazing Projects
+            </h1>
+            <p className="text-xl text-gray-300 mb-8">
+              Explore innovative solutions built by Rwanda's tech community
+            </p>
           </motion.div>
         </div>
       </section>
 
-      {/* Main Content */}
-      <div className="container py-12">
-        {/* Category Filters */}
-        <div className="flex overflow-x-auto gap-4 mb-8 pb-4">
-          {categories.map((category) => (
-            <Button
-              key={category.id}
-              variant={activeFilter === category.id ? "default" : "outline"}
-              onClick={() => setActiveFilter(category.id)}
-              className="whitespace-nowrap"
-            >
-              {category.label}
-              <Badge variant="secondary" className="ml-2">
-                {category.count}
-              </Badge>
-            </Button>
-          ))}
-        </div>
-
-        {/* Projects Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {projects.map((project) => (
-            <motion.div
-              key={project.title}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              whileHover={{ y: -5 }}
-              className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300"
-            >
-              <div className="relative h-48 overflow-hidden">
-                <img 
-                  src={project.thumbnail} 
-                  alt={project.title}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                <div className="absolute bottom-4 left-4 right-4">
-                  <div className="flex items-center text-white gap-2 mb-2">
-                    <Badge variant="secondary" className="bg-primary/20 text-primary">
-                      {project.submittedTo}
-                    </Badge>
-                  </div>
-                </div>
-              </div>
-
-              <div className="p-6">
-                <h3 className="text-xl font-semibold mb-2">
-                  {project.title}
-                </h3>
-                <p className="text-gray-600 mb-4 line-clamp-2">
-                  {project.description}
-                </p>
-
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {project.technologies.map((tech) => (
-                    <Badge key={tech} variant="outline" className="bg-gray-50">
-                      {tech}
-                    </Badge>
-                  ))}
-                </div>
-
-                <Separator className="my-4" />
-
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center text-gray-600">
+      {/* Featured Projects */}
+      <section className="py-20">
+        <div className="container mx-auto px-4">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+          >
+            {projects.map((project, index) => (
+              <motion.div
+                key={project.title}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                className="group relative bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300"
+              >
+                <div className="relative">
+                  <img 
+                    src={project.image} 
+                    alt={project.title}
+                    className="w-full h-48 object-cover rounded-t-2xl"
+                  />
+                  {project.featured && (
+                    <Badge className="absolute top-4 right-4 bg-primary text-white">
                       <Star className="w-4 h-4 mr-1" />
-                      {project.likes}
-                    </div>
-                    <span className="text-gray-400">{project.author}</span>
-                  </div>
-                  <Button variant="ghost" className="hover:bg-gray-50">
-                    View Project
-                    <ArrowRight className="ml-2 w-4 h-4" />
-                  </Button>
+                      Featured
+                    </Badge>
+                  )}
                 </div>
-              </div>
-            </motion.div>
-          ))}
+                <div className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <Badge variant="secondary">
+                      {project.category}
+                    </Badge>
+                    <div className="flex items-center space-x-4 text-gray-500">
+                      <div className="flex items-center">
+                        <Eye className="w-4 h-4 mr-1" />
+                        <span className="text-sm">{project.views}</span>
+                      </div>
+                      <div className="flex items-center">
+                        <Star className="w-4 h-4 mr-1" />
+                        <span className="text-sm">{project.likes}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <h3 className="text-xl font-semibold mb-2 group-hover:text-primary transition-colors">
+                    {project.title}
+                  </h3>
+                  <p className="text-gray-600 mb-2">
+                    by {project.creator}
+                  </p>
+                  <p className="text-gray-500 text-sm mb-6 line-clamp-2">
+                    {project.description}
+                  </p>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center text-gray-500">
+                      <Users className="w-4 h-4 mr-1" />
+                      <span className="text-sm">{project.contributors} Contributors</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Button size="sm" variant="outline" className="group">
+                        <Github className="w-4 h-4 mr-1" />
+                        Code
+                      </Button>
+                      <Button size="sm" className="group">
+                        <ExternalLink className="w-4 h-4 mr-1" />
+                        Demo
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
         </div>
-      </div>
+      </section>
+
+      {/* Call to Action */}
+      <section className="py-20 bg-gradient-to-br from-gray-50 to-white">
+        <div className="container mx-auto px-4">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="max-w-3xl mx-auto text-center"
+          >
+            <h2 className="text-3xl font-bold mb-6">
+              Ready to Showcase Your Project?
+            </h2>
+            <p className="text-gray-600 mb-8">
+              Join our community and share your innovative solutions with the world
+            </p>
+            <Button size="lg" className="bg-primary text-white hover:bg-primary/90">
+              Submit Your Project
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
+          </motion.div>
+        </div>
+      </section>
 
       <Footer />
     </div>

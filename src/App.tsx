@@ -6,6 +6,8 @@ import Community from './pages/Community';
 import SignIn from './pages/SignIn';
 import SignUp from './pages/SignUp';
 import ForgotPassword from './pages/ForgotPassword';
+import Dashboard from './pages/Dashboard';
+import PartnerPending from './pages/PartnerPending';
 
 function App() {
   return (
@@ -18,6 +20,8 @@ function App() {
         <Route path="/signin" element={<SignIn />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/partner-pending" element={<PartnerPending />} />
       </Routes>
     </Router>
   );

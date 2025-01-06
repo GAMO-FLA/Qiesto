@@ -1,97 +1,408 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
-import { Github, Mail, ArrowRight } from 'lucide-react';
-import { Separator } from '@/components/ui/separator';
-import Logo from '@/components/Logo';
+import { Link, useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
+import { 
+  Sparkles, Mail, Lock, User, ArrowRight, CheckCircle2, 
+  Users, Trophy, Building2, Briefcase, Eye, EyeOff 
+} from 'lucide-react';
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 
 const SignUp = () => {
+  const [formData, setFormData] = useState({
+    fullName: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    userType: 'participant',
+    organization: '',
+    position: '',
+  });
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
+
+  const validateForm = () => {
+    if (formData.password !== formData.confirmPassword) {
+      toast.error('Passwords do not match');
+      return false;
+    }
+    if (formData.password.length < 8) {
+      toast.error('Password must be at least 8 characters long');
+      return false;
+    }
+    return true;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validateForm()) return;
+    
+    setIsLoading(true);
+    try {
+      if (formData.userType === 'partner') {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        toast.success('Thank you for your interest! Our team will contact you soon.');
+        navigate('/partner-pending');
+      } else {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        toast.success('Account created successfully!');
+        navigate('/signin');
+      }
+    } catch (error) {
+      toast.error('Failed to create account. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData(prev => ({
+      ...prev,
+      [e.target.name]: e.target.value
+    }));
+  };
+
+  const userTypes = [
+    {
+      value: 'participant',
+      title: 'Join Challenges',
+      description: 'Participate in innovation challenges',
+      icon: Users,
+      benefits: [
+        'Access exclusive challenges',
+        'Showcase your solutions',
+        'Win prizes and recognition',
+        'Connect with innovators'
+      ]
+    },
+    {
+      value: 'partner',
+      title: 'Create Challenges',
+      description: 'Launch innovation challenges',
+      icon: Trophy,
+      benefits: [
+        'Launch custom challenges',
+        'Access top talent',
+        'Track submissions',
+        'Drive innovation'
+      ]
+    }
+  ];
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex items-center justify-center p-4">
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -left-1/4 -top-1/4 w-1/2 h-1/2 bg-primary/10 rounded-full blur-3xl" />
-        <div className="absolute -right-1/4 -bottom-1/4 w-1/2 h-1/2 bg-primary/5 rounded-full blur-3xl" />
+    <div className="min-h-screen bg-gray-50/50 grid lg:grid-cols-2">
+      {/* Left Side - Form */}
+      <div className="relative flex items-center justify-center p-8">
+        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent" />
+        
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="w-full max-w-md z-10"
+        >
+          {/* Logo */}
+          <Link to="/" className="flex items-center space-x-2 mb-12">
+            <div className="p-2 bg-primary/10 rounded-xl">
+              <Sparkles className="h-6 w-6 text-primary" />
+            </div>
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
+              Qiesto
+            </h1>
+          </Link>
+
+          {/* Welcome Text */}
+          <div className="mb-8">
+            <h2 className="text-3xl font-bold mb-2">Create an account</h2>
+            <p className="text-gray-600">
+              Join our community of innovators today
+            </p>
+          </div>
+
+          {/* Sign Up Form */}
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-4">
+              {/* User Type Selection */}
+              <div className="space-y-3">
+                <label className="text-sm font-medium text-gray-700">
+                  I want to
+                </label>
+                <RadioGroup
+                  defaultValue="participant"
+                  onValueChange={(value) => 
+                    setFormData(prev => ({ ...prev, userType: value }))
+                  }
+                  className="grid grid-cols-2 gap-4"
+                >
+                  {userTypes.map((type) => (
+                    <div key={type.value}>
+                      <RadioGroupItem
+                        value={type.value}
+                        id={type.value}
+                        className="peer sr-only"
+                      />
+                      <Label
+                        htmlFor={type.value}
+                        className="flex flex-col items-center justify-between rounded-xl border-2 border-muted bg-white p-4 hover:bg-gray-50 peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer transition-all"
+                      >
+                        <type.icon className="mb-2 h-6 w-6 text-primary" />
+                        <p className="font-medium">{type.title}</p>
+                        <p className="text-sm text-gray-500 text-center">
+                          {type.description}
+                        </p>
+                      </Label>
+                    </div>
+                  ))}
+                </RadioGroup>
+              </div>
+
+              {/* Personal Information */}
+              <div className="space-y-4 pt-4">
+                <div>
+                  <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1.5">
+                    Full Name
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <User className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <Input
+                      id="fullName"
+                      name="fullName"
+                      type="text"
+                      value={formData.fullName}
+                      onChange={handleChange}
+                      required
+                      className="pl-10 bg-white"
+                      placeholder="Enter your full name"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1.5">
+                    Email address
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <Mail className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <Input
+                      id="email"
+                      name="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      required
+                      className="pl-10 bg-white"
+                      placeholder="Enter your email"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1.5">
+                    Password
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <Lock className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <Input
+                      id="password"
+                      name="password"
+                      type={showPassword ? "text" : "password"}
+                      value={formData.password}
+                      onChange={handleChange}
+                      required
+                      className="pl-10 pr-10 bg-white"
+                      placeholder="Create a password"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-5 w-5 text-gray-400" />
+                      ) : (
+                        <Eye className="h-5 w-5 text-gray-400" />
+                      )}
+                    </button>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Must be at least 8 characters long
+                  </p>
+                </div>
+
+                <div>
+                  <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1.5">
+                    Confirm Password
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <Lock className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <Input
+                      id="confirmPassword"
+                      name="confirmPassword"
+                      type={showConfirmPassword ? "text" : "password"}
+                      value={formData.confirmPassword}
+                      onChange={handleChange}
+                      required
+                      className="pl-10 pr-10 bg-white"
+                      placeholder="Confirm your password"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                    >
+                      {showConfirmPassword ? (
+                        <EyeOff className="h-5 w-5 text-gray-400" />
+                      ) : (
+                        <Eye className="h-5 w-5 text-gray-400" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Partner-specific fields */}
+                {formData.userType === 'partner' && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="space-y-4"
+                  >
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                        Organization Name
+                      </label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                          <Building2 className="h-5 w-5 text-gray-400" />
+                        </div>
+                        <Input
+                          name="organization"
+                          value={formData.organization}
+                          onChange={handleChange}
+                          required
+                          className="pl-10 bg-white"
+                          placeholder="Enter your organization name"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                        Your Position
+                      </label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                          <Briefcase className="h-5 w-5 text-gray-400" />
+                        </div>
+                        <Input
+                          name="position"
+                          value={formData.position}
+                          onChange={handleChange}
+                          required
+                          className="pl-10 bg-white"
+                          placeholder="Enter your position"
+                        />
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </div>
+            </div>
+
+            <Button
+              type="submit"
+              className="w-full bg-primary text-white hover:bg-primary/90 transition-colors rounded-xl h-11"
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <div className="flex items-center">
+                  <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+                  {formData.userType === 'partner' ? 'Submitting...' : 'Creating account...'}
+                </div>
+              ) : (
+                <span className="flex items-center">
+                  {formData.userType === 'partner' ? 'Submit Application' : 'Create Account'}
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </span>
+              )}
+            </Button>
+
+            <p className="text-center text-sm text-gray-600">
+              Already have an account?{' '}
+              <Link
+                to="/signin"
+                className="text-primary hover:text-primary/80 transition-colors font-medium"
+              >
+                Sign in
+              </Link>
+            </p>
+          </form>
+        </motion.div>
       </div>
 
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="max-w-md w-full bg-white/10 backdrop-blur-xl rounded-2xl p-8 relative"
-      >
-        <div className="text-center mb-8">
-          <Link to="/" className="inline-block mb-6">
-            <Logo />
-          </Link>
-          <h2 className="text-2xl font-bold text-white mb-2">Create an account</h2>
-          <p className="text-gray-300">Join Rwanda's tech innovation community</p>
-        </div>
+      {/* Right Side - Benefits */}
+      <div className="hidden lg:block relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
+          <div className="absolute inset-0 bg-grid-white/[0.02]" />
+          
+          {/* Animated Blobs */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 1 }}
+            className="absolute -left-1/4 -top-1/4 w-1/2 h-1/2 bg-primary/30 rounded-full blur-3xl"
+          />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 1, delay: 0.2 }}
+            className="absolute -right-1/4 -bottom-1/4 w-1/2 h-1/2 bg-blue-500/20 rounded-full blur-3xl"
+          />
 
-        <div className="space-y-4 mb-6">
-          <Button variant="outline" className="w-full bg-white/5 border-white/10 text-white hover:bg-white/10">
-            <Github className="w-5 h-5 mr-2" />
-            Sign up with GitHub
-          </Button>
-          <Button variant="outline" className="w-full bg-white/5 border-white/10 text-white hover:bg-white/10">
-            <Mail className="w-5 h-5 mr-2" />
-            Sign up with Google
-          </Button>
-        </div>
-
-        <div className="relative mb-6">
-          <Separator className="bg-white/10" />
-          <span className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gray-900 px-2 text-sm text-gray-400">
-            or continue with
-          </span>
-        </div>
-
-        <form className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <Input
-              type="text"
-              placeholder="First name"
-              className="bg-white/5 border-white/10 text-white placeholder:text-gray-400"
-            />
-            <Input
-              type="text"
-              placeholder="Last name"
-              className="bg-white/5 border-white/10 text-white placeholder:text-gray-400"
-            />
+          {/* Content */}
+          <div className="relative h-full flex items-center justify-center p-8">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="text-white max-w-md"
+            >
+              <Sparkles className="h-12 w-12 mb-6 text-primary" />
+              <h2 className="text-3xl font-bold mb-8">
+                {formData.userType === 'partner' 
+                  ? 'Partner with Us' 
+                  : 'Join Our Innovation Community'}
+              </h2>
+              <div className="space-y-4">
+                {userTypes.find(type => type.value === formData.userType)?.benefits.map((benefit, index) => (
+                  <motion.div
+                    key={benefit}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.5 + index * 0.1 }}
+                    className="flex items-center space-x-3"
+                  >
+                    <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0" />
+                    <span className="text-gray-300">{benefit}</span>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
           </div>
-          <Input
-            type="email"
-            placeholder="Email address"
-            className="bg-white/5 border-white/10 text-white placeholder:text-gray-400"
-          />
-          <Input
-            type="password"
-            placeholder="Password"
-            className="bg-white/5 border-white/10 text-white placeholder:text-gray-400"
-          />
-          <p className="text-xs text-gray-400">
-            By creating an account, you agree to our{' '}
-            <Link to="/terms" className="text-primary hover:text-primary/90">
-              Terms of Service
-            </Link>{' '}
-            and{' '}
-            <Link to="/privacy" className="text-primary hover:text-primary/90">
-              Privacy Policy
-            </Link>
-          </p>
-          <Button className="w-full bg-primary hover:bg-primary/90">
-            Create account
-            <ArrowRight className="w-4 h-4 ml-2" />
-          </Button>
-        </form>
-
-        <p className="mt-6 text-center text-gray-300">
-          Already have an account?{' '}
-          <Link to="/signin" className="text-primary hover:text-primary/90">
-            Sign in
-          </Link>
-        </p>
-      </motion.div>
+        </div>
+      </div>
     </div>
   );
 };
