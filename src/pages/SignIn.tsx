@@ -18,9 +18,13 @@ const SignIn = () => {
     setIsLoading(true);
 
     try {
-      await signIn(email, password);
+      const { user } = await signIn(email, password);
       toast.success('Successfully signed in!');
-      navigate('/dashboard');
+      if (user.role === 'partner') {
+        navigate('/dashboard');
+      } else {
+        navigate('/dashboard');
+      }
     } catch (error) {
       toast.error('Failed to sign in. Please check your credentials.');
     } finally {
@@ -143,6 +147,18 @@ const SignIn = () => {
                 Sign up
               </Link>
             </p>
+
+            <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+              <p className="text-sm text-gray-600 mb-2">Test Credentials:</p>
+              <div className="space-y-2">
+                <p className="text-xs text-gray-500">
+                  Participant: participant@qiesto.com / Asdfg12345!
+                </p>
+                <p className="text-xs text-gray-500">
+                  Partner: partner@qiesto.com / Asdfg12345!
+                </p>
+              </div>
+            </div>
           </form>
         </motion.div>
       </div>

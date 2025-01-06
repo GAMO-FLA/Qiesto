@@ -14,10 +14,11 @@ import {
 import { Switch } from "@/components/ui/switch";
 import NewChallengeModal from '@/components/dashboard/NewChallengeModal';
 import NotificationsDropdown from '@/components/dashboard/NotificationsDropdown';
+import { User } from '@/types/user';
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [activeView, setActiveView] = useState('overview');
   const [showAllChallenges, setShowAllChallenges] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -147,12 +148,22 @@ const Dashboard = () => {
   const handleSignOut = async () => {
     try {
       await signOut();
-      toast.success('Successfully signed out');
       navigate('/signin');
     } catch (error) {
-      toast.error('Failed to sign out');
+      toast.error('Error signing out');
     }
   };
+
+  useEffect(() => {
+    const loadUser = async () => {
+      const currentUser = await getCurrentUser();
+      if (currentUser?.role === 'partner') {
+        navigate('/dashboard');
+      }
+      setUser(currentUser);
+    };
+    loadUser();
+  }, [navigate]);
 
   const renderMainContent = () => {
     switch (activeView) {
