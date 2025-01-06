@@ -8,28 +8,28 @@ import { HackathonCard } from '@/components/HackathonCard';
 const Index = () => {
   const hackathons = [
     {
-      title: "Google Cloud x MLB(TM) Hackathon",
-      organizer: "Google Cloud",
-      prize: "$98,700",
-      participants: 4478,
-      daysLeft: 7,
-      image: "/placeholder.svg"
-    },
-    {
-      title: "AWS Game Builder Challenge",
-      organizer: "Amazon Web Services",
-      prize: "$160,000",
-      participants: 3583,
+      title: "Rwanda Tech Innovation Challenge",
+      organizer: "Rwanda ICT Chamber",
+      prize: "$25,000",
+      participants: 450,
       daysLeft: 14,
-      image: "/placeholder.svg"
+      image: "/lovable-uploads/e2721391-268f-467e-a649-b1423b9e99d5.png"
     },
     {
-      title: "Accelerate App Development",
-      organizer: "GitHub",
-      prize: "$10,000",
-      participants: 2309,
+      title: "East African FinTech Hackathon",
+      organizer: "Bank of Kigali",
+      prize: "$30,000",
+      participants: 380,
       daysLeft: 21,
-      image: "/placeholder.svg"
+      image: "/lovable-uploads/e2721391-268f-467e-a649-b1423b9e99d5.png"
+    },
+    {
+      title: "Smart Cities Innovation Challenge",
+      organizer: "City of Kigali",
+      prize: "$20,000",
+      participants: 290,
+      daysLeft: 7,
+      image: "/lovable-uploads/e2721391-268f-467e-a649-b1423b9e99d5.png"
     }
   ];
 
@@ -40,15 +40,15 @@ const Index = () => {
       <Partners />
       <SearchBar />
       
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold">Hackathons for you</h2>
+      <div className="container mx-auto px-4 py-16">
+        <div className="flex justify-between items-center mb-8">
+          <h2 className="text-2xl font-bold">Featured Hackathons</h2>
           <a href="#" className="text-primary hover:underline">
-            Edit your recommendations
+            View all hackathons
           </a>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {hackathons.map((hackathon) => (
             <HackathonCard key={hackathon.title} {...hackathon} />
           ))}

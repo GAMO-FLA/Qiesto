@@ -1,6 +1,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader } from './ui/card';
 import { Badge } from './ui/badge';
+import { Calendar, Users, Award } from 'lucide-react';
 
 interface HackathonCardProps {
   title: string;
@@ -20,19 +21,36 @@ export const HackathonCard = ({
   image
 }: HackathonCardProps) => {
   return (
-    <Card className="overflow-hidden hover:shadow-lg transition-shadow">
+    <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 group">
       <CardHeader className="p-0">
-        <img src={image} alt={title} className="w-full h-48 object-cover" />
-      </CardHeader>
-      <CardContent className="p-4">
-        <div className="flex justify-between items-start mb-4">
-          <h3 className="text-lg font-semibold">{title}</h3>
-          <Badge variant="secondary">{daysLeft} days left</Badge>
+        <div className="relative">
+          <img src={image} alt={title} className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300" />
+          <Badge 
+            variant="secondary" 
+            className="absolute top-4 right-4 bg-white/90 text-gray-800"
+          >
+            {daysLeft} days left
+          </Badge>
         </div>
-        <p className="text-gray-600 mb-2">by {organizer}</p>
-        <div className="flex justify-between items-center text-sm text-gray-500">
-          <span>{prize} in prizes</span>
-          <span>{participants} participants</span>
+      </CardHeader>
+      <CardContent className="p-6">
+        <h3 className="text-xl font-semibold mb-2 group-hover:text-primary transition-colors">
+          {title}
+        </h3>
+        <p className="text-gray-600 mb-4">by {organizer}</p>
+        <div className="flex flex-col gap-2 text-sm text-gray-500">
+          <div className="flex items-center gap-2">
+            <Award className="h-4 w-4" />
+            <span>{prize} in prizes</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Users className="h-4 w-4" />
+            <span>{participants} participants</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Calendar className="h-4 w-4" />
+            <span>Ends in {daysLeft} days</span>
+          </div>
         </div>
       </CardContent>
     </Card>
