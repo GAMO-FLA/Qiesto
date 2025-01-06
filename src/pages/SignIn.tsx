@@ -19,14 +19,29 @@ const SignIn = () => {
 
     try {
       const { user } = await signIn(email, password);
+      
+      // First check if we have a valid user
+      if (!user) {
+        throw new Error('No user data received');
+      }
+
       toast.success('Successfully signed in!');
+      
+      // Route based on user role
       if (user.role === 'partner') {
+        if (user.status === 'pending') {
+          navigate('/partner-pending');
+        } else {
+          navigate('/partner-dashboard');
+        }
+      } else if (user.role === 'participant') {
         navigate('/dashboard');
       } else {
-        navigate('/dashboard');
+        throw new Error('Invalid user role');
       }
     } catch (error) {
-      toast.error('Failed to sign in. Please check your credentials.');
+      console.error('Sign in error:', error);
+      toast.error('Invalid email or password');
     } finally {
       setIsLoading(false);
     }

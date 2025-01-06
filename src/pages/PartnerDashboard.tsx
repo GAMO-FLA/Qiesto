@@ -58,8 +58,12 @@ const PartnerDashboard = () => {
   useEffect(() => {
     const loadUser = async () => {
       const currentUser = await getCurrentUser();
-      if (currentUser?.role === 'participant') {
+      if (!currentUser) {
+        navigate('/signin');
+      } else if (currentUser.role !== 'partner') {
         navigate('/dashboard');
+      } else if (currentUser.status === 'pending') {
+        navigate('/partner-pending');
       }
       setUser(currentUser);
     };

@@ -157,8 +157,10 @@ const Dashboard = () => {
   useEffect(() => {
     const loadUser = async () => {
       const currentUser = await getCurrentUser();
-      if (currentUser?.role === 'partner') {
-        navigate('/dashboard');
+      if (!currentUser) {
+        navigate('/signin');
+      } else if (currentUser.role === 'partner') {
+        navigate('/partner-dashboard');
       }
       setUser(currentUser);
     };

@@ -1,10 +1,10 @@
 export interface User {
   id: string;
-  fullName: string;
   email: string;
+  fullName: string;
   role: 'partner' | 'participant';
+  status?: 'pending' | 'active';
   organization?: string;
-  avatar?: string;
   createdAt: string;
 }
 

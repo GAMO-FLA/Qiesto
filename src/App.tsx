@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Index from './pages/Index';
 import Challenges from './pages/Challenges';
 import Projects from './pages/Projects';
@@ -25,10 +25,22 @@ function App() {
     loadUser();
   }, []);
 
-  // Create a route renderer function to ensure we have fresh user data
+  // Create a route renderer function that checks roles
   const renderDashboard = () => {
     const currentUser = JSON.parse(localStorage.getItem('user') || 'null');
-    return currentUser?.role === 'partner' ? <PartnerDashboard /> : <Dashboard />;
+    
+    if (!currentUser) {
+      return <Navigate to="/signin" replace />;
+    }
+
+    if (currentUser.role === 'partner') {
+      if (currentUser.status === 'pending') {
+        return <Navigate to="/partner-pending" replace />;
+      }
+      return <PartnerDashboard />;
+    }
+
+    return <Dashboard />;
   };
 
   return (
@@ -41,15 +53,32 @@ function App() {
         <Route path="/signin" element={<SignIn />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
+        
+        {/* Protected Routes with Role Checks */}
         <Route
           path="/dashboard"
           element={
-            <ProtectedRoute>
-              {renderDashboard()}
+            <ProtectedRoute allowedRoles={['participant']}>
+              <Dashboard />
             </ProtectedRoute>
           }
         />
-        <Route path="/partner-pending" element={<PartnerPending />} />
+        <Route
+          path="/partner-dashboard"
+          element={
+            <ProtectedRoute allowedRoles={['partner']}>
+              <PartnerDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route 
+          path="/partner-pending" 
+          element={
+            <ProtectedRoute allowedRoles={['partner']}>
+              <PartnerPending />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </Router>
   );
