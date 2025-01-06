@@ -27,7 +27,7 @@ export const Hero = () => {
       </div>
       
       {/* Content */}
-      <div className="relative z-20 h-full">
+      <div className="relative z-20 h-full" style={{ marginTop: '2rem' }}>
         <div className="container mx-auto px-4 h-full flex items-center">
           <div className="max-w-3xl">
             <motion.div
