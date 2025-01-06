@@ -1,23 +1,24 @@
-import { Navigate } from 'react-router-dom';
-import { isAuthenticated } from '@/services/auth';
-
+import { Navigate } from 'react-router-dom'
+import { useAuth } from '@/contexts/AuthContext'
 interface ProtectedRouteProps {
-  children: React.ReactNode;
-  allowedRoles?: string[];
+  children: React.ReactNode
+  allowedRoles?: ('partner' | 'participant')[]
 }
 
 export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
-  const user = JSON.parse(localStorage.getItem('user') || 'null');
+  const { user, loading } = useAuth();
 
-  if (!isAuthenticated() || !user) {
-    return <Navigate to="/signin" replace />;
+  if (loading) {
+    return <div>Loading...</div>;
   }
 
-  // If roles are specified, check if user has permission
-  if (allowedRoles && !allowedRoles.includes(user.role)) {
-    // Redirect partners to partner dashboard and participants to regular dashboard
-    return <Navigate to={user.role === 'partner' ? '/partner-dashboard' : '/dashboard'} replace />;
+  if (!user) {
+    return <Navigate to="/signin" />;
+  }
+
+  if (allowedRoles && user.role && !allowedRoles.includes(user.role as 'partner' | 'participant')) {
+    return <Navigate to={user.role === 'partner' ? '/partner-dashboard' : '/dashboard'} />;
   }
 
   return <>{children}</>;
-}; 
+};

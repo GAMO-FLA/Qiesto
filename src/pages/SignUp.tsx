@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import { signUp } from '@/services/auth';
 
 const SignUp = () => {
   const [formData, setFormData] = useState({
@@ -39,23 +40,38 @@ const SignUp = () => {
     return true;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) return;
-    
+      
     setIsLoading(true);
     try {
       if (formData.userType === 'partner') {
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await signUp({
+          email: formData.email,
+          password: formData.password,
+          fullName: formData.fullName,
+          userType: 'partner',
+          organization: formData.organization,
+          position: formData.position,
+          status: 'pending' // status for partners
+        });
         toast.success('Thank you for your interest! Our team will contact you soon.');
         navigate('/partner-pending');
       } else {
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await signUp({
+          email: formData.email,
+          password: formData.password,
+          fullName: formData.fullName,
+          userType: 'participant',
+          status: 'approved' // Participants are auto-approved
+        });
         toast.success('Account created successfully!');
         navigate('/signin');
       }
     } catch (error) {
-      toast.error('Failed to create account. Please try again.');
+      const err = error as Error;
+      toast.error(err.message || 'Failed to create account. Please try again.');
     } finally {
       setIsLoading(false);
     }

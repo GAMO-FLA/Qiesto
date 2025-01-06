@@ -10,77 +10,49 @@ import Dashboard from './pages/Dashboard';
 import PartnerPending from './pages/PartnerPending';
 import PartnerDashboard from './pages/PartnerDashboard';
 import { ProtectedRoute } from './components/ProtectedRoute';
-import { User } from '@/types/user';
-import { useState, useEffect } from 'react';
-import { getCurrentUser } from '@/services/auth';
+import { AuthProvider } from './contexts/AuthContext';
 
 function App() {
-  const [user, setUser] = useState<User | null>(null);
-
-  useEffect(() => {
-    const loadUser = async () => {
-      const currentUser = await getCurrentUser();
-      setUser(currentUser);
-    };
-    loadUser();
-  }, []);
-
-  // Create a route renderer function that checks roles
-  const renderDashboard = () => {
-    const currentUser = JSON.parse(localStorage.getItem('user') || 'null');
-    
-    if (!currentUser) {
-      return <Navigate to="/signin" replace />;
-    }
-
-    if (currentUser.role === 'partner') {
-      if (currentUser.status === 'pending') {
-        return <Navigate to="/partner-pending" replace />;
-      }
-      return <PartnerDashboard />;
-    }
-
-    return <Dashboard />;
-  };
-
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Index />} />
-        <Route path="/challenges" element={<Challenges />} />
-        <Route path="/projects" element={<Projects />} />
-        <Route path="/community" element={<Community />} />
-        <Route path="/signin" element={<SignIn />} />
-        <Route path="/signup" element={<SignUp />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        
-        {/* Protected Routes with Role Checks */}
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute allowedRoles={['participant']}>
-              <Dashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/partner-dashboard"
-          element={
-            <ProtectedRoute allowedRoles={['partner']}>
-              <PartnerDashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route 
-          path="/partner-pending" 
-          element={
-            <ProtectedRoute allowedRoles={['partner']}>
-              <PartnerPending />
-            </ProtectedRoute>
-          }
-        />
-      </Routes>
-    </Router>
+    <AuthProvider>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/challenges" element={<Challenges />} />
+          <Route path="/projects" element={<Projects />} />
+          <Route path="/community" element={<Community />} />
+          <Route path="/signin" element={<SignIn />} />
+          <Route path="/signup" element={<SignUp />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          
+          {/* Protected Routes with Role Checks */}
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute allowedRoles={['participant']}>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/partner-dashboard"
+            element={
+              <ProtectedRoute allowedRoles={['partner']}>
+                <PartnerDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route 
+            path="/partner-pending" 
+            element={
+              <ProtectedRoute allowedRoles={['partner']}>
+                <PartnerPending />
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      </Router>
+    </AuthProvider>
   );
 }
 

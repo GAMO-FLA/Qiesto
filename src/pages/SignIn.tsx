@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Link, useNavigate } from 'react-router-dom';
-import { signIn } from '@/services/auth';
+import { signIn, signOut } from '@/services/auth';
 import { toast } from 'sonner';
 import { Sparkles, Mail, Lock, ArrowRight } from 'lucide-react';
 
@@ -18,26 +18,16 @@ const SignIn = () => {
     setIsLoading(true);
 
     try {
-      const { user } = await signIn(email, password);
+      const { user } = await signIn({ email, password });
       
-      // First check if we have a valid user
-      if (!user) {
-        throw new Error('No user data received');
-      }
-
-      toast.success('Successfully signed in!');
-      
-      // Route based on user role
       if (user.role === 'partner') {
         if (user.status === 'pending') {
           navigate('/partner-pending');
         } else {
           navigate('/partner-dashboard');
         }
-      } else if (user.role === 'participant') {
-        navigate('/dashboard');
       } else {
-        throw new Error('Invalid user role');
+        navigate('/dashboard');
       }
     } catch (error) {
       console.error('Sign in error:', error);
@@ -162,18 +152,6 @@ const SignIn = () => {
                 Sign up
               </Link>
             </p>
-
-            <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-              <p className="text-sm text-gray-600 mb-2">Test Credentials:</p>
-              <div className="space-y-2">
-                <p className="text-xs text-gray-500">
-                  Participant: participant@qiesto.com / Asdfg12345!
-                </p>
-                <p className="text-xs text-gray-500">
-                  Partner: partner@qiesto.com / Asdfg12345!
-                </p>
-              </div>
-            </div>
           </form>
         </motion.div>
       </div>
@@ -220,4 +198,4 @@ const SignIn = () => {
   );
 };
 
-export default SignIn; 
+export default SignIn;

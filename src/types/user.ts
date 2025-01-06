@@ -1,11 +1,13 @@
-export interface User {
+import { User as SupabaseUser } from '@supabase/supabase-js'
+
+export interface User extends SupabaseUser {
   id: string;
   email: string;
-  fullName: string;
-  role: 'partner' | 'participant';
+  fullName?: string;
+  userType: 'partner' | 'participant';
   status?: 'pending' | 'active';
   organization?: string;
-  createdAt: string;
+  createdAt?: string;
 }
 
 export interface Challenge {

@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { getCurrentUser, signOut } from '@/services/auth';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { 
   LayoutDashboard, Users, Trophy, Settings, LogOut, Plus,
@@ -15,14 +15,29 @@ import { Switch } from "@/components/ui/switch";
 import NewChallengeModal from '@/components/dashboard/NewChallengeModal';
 import NotificationsDropdown from '@/components/dashboard/NotificationsDropdown';
 import { User } from '@/types/user';
+import { useAuth } from '@/contexts/AuthContext'
 
 const Dashboard = () => {
+  const { user, loading } = useAuth() as { user: User | null, loading: boolean };
   const navigate = useNavigate();
-  const [user, setUser] = useState<User | null>(null);
   const [activeView, setActiveView] = useState('overview');
   const [showAllChallenges, setShowAllChallenges] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('all');
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!user) {
+    return <Navigate to="/signin" />
+  } else if (user.role === 'partner') {
+    console.log('User is a partner');
+  } else if (user.role === 'participant') {
+    console.log('User is a participant');
+  } else {
+    console.error('Invalid user role');
+  }
 
   const MENU_ITEMS = [
     {
@@ -153,19 +168,6 @@ const Dashboard = () => {
       toast.error('Error signing out');
     }
   };
-
-  useEffect(() => {
-    const loadUser = async () => {
-      const currentUser = await getCurrentUser();
-      if (!currentUser) {
-        navigate('/signin');
-      } else if (currentUser.role === 'partner') {
-        navigate('/partner-dashboard');
-      }
-      setUser(currentUser);
-    };
-    loadUser();
-  }, [navigate]);
 
   const renderMainContent = () => {
     switch (activeView) {
