@@ -4,6 +4,7 @@ import { Hero } from '@/components/Hero';
 import { Partners } from '@/components/Partners';
 import { SearchBar } from '@/components/SearchBar';
 import { HackathonCard } from '@/components/HackathonCard';
+import { Footer } from '@/components/Footer';
 
 const Index = () => {
   const hackathons = [
@@ -54,6 +55,8 @@ const Index = () => {
           ))}
         </div>
       </div>
+
+      <Footer />
     </div>
   );
 };
