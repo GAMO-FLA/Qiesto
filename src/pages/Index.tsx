@@ -92,26 +92,26 @@ const Index = () => {
       <Hero />
       
       {/* Stats Section with Enhanced Design */}
-      <section className="relative -mt-20 z-10">
-        <div className="container mx-auto px-4">
+      <section className="relative z-10 px-4 sm:px-6 lg:px-8">
+        <div className="container mx-auto transform -translate-y-16 md:-translate-y-20">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="grid grid-cols-1 md:grid-cols-3 gap-8 bg-white rounded-2xl shadow-xl p-8 border border-gray-100"
+            className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8 bg-white rounded-2xl shadow-xl p-4 md:p-8 border border-gray-100 mx-4 md:mx-0"
           >
             {stats.map(({ icon: Icon, value, label, color }) => (
               <motion.div
                 key={label}
                 whileHover={{ scale: 1.02 }}
-                className="flex items-center space-x-4 p-6 rounded-xl bg-gray-50/50 hover:bg-gray-50 transition-colors"
+                className="flex items-center space-x-4 p-4 md:p-6 rounded-xl bg-gray-50/50 hover:bg-gray-50 transition-colors"
               >
-                <div className={`p-4 rounded-xl ${color}`}>
-                  <Icon className="w-6 h-6" />
+                <div className={`p-3 md:p-4 rounded-xl ${color}`}>
+                  <Icon className="w-5 h-5 md:w-6 md:h-6" />
                 </div>
                 <div>
-                  <div className="text-3xl font-bold text-gray-900">{value}</div>
-                  <div className="text-sm text-gray-600">{label}</div>
+                  <div className="text-2xl md:text-3xl font-bold text-gray-900">{value}</div>
+                  <div className="text-xs md:text-sm text-gray-600">{label}</div>
                 </div>
               </motion.div>
             ))}

@@ -31,7 +31,7 @@ export const Hero = () => {
   ];
 
   return (
-    <div className="relative min-h-[90vh] w-full overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
+    <div className="relative min-h-[90vh] w-full overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 pb-48">
       {/* Enhanced Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
         {/* Gradient Orbs */}
@@ -135,30 +135,32 @@ export const Hero = () => {
                 transition={{ delay: 0.4 }}
                 className="flex flex-col sm:flex-row gap-6 justify-center"
               >
-                <Link to="/signup">
-                  <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                    <Button 
-                      size="lg" 
-                      className="text-lg px-8 h-14 bg-gradient-to-r from-primary to-blue-500 hover:opacity-90 transition-all duration-300 group relative overflow-hidden shadow-xl shadow-primary/25"
-                    >
-                      <span className="relative z-10 flex items-center">
-                        Get Started Now
-                        <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
-                      </span>
-                      <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-primary opacity-0 group-hover:opacity-100 transition-opacity" />
-                    </Button>
-                  </motion.div>
-                </Link>
-                <Link to="/challenges">
-                  <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                    <Button 
-                      size="lg" 
-                      className="text-lg px-8 h-14 text-white border-white/20 hover:bg-white/10 backdrop-blur-sm transition-all duration-300"
-                    >
-                      Explore Challenges
-                    </Button>
-                  </motion.div>
-                </Link>
+                <div className="flex flex-col sm:flex-row gap-4 sm:gap-10 mt-8 items-center">
+                  <Link to="/signup">
+                    <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                      <Button 
+                        size="lg" 
+                        className="text-lg px-8 h-14 bg-gradient-to-r from-primary to-blue-500 hover:opacity-90 transition-all duration-300 group relative overflow-hidden shadow-xl shadow-primary/25"
+                      >
+                        <span className="relative z-10 flex items-center">
+                          Get Started Now
+                          <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+                        </span>
+                        <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-primary opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </Button>
+                    </motion.div>
+                  </Link>
+                  <Link to="/challenges">
+                    <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                      <Button 
+                        size="lg" 
+                        className="text-lg px-8 h-14 text-white border-white/20 hover:bg-white/10 backdrop-blur-sm transition-all duration-300"
+                      >
+                        Explore Challenges
+                      </Button>
+                    </motion.div>
+                  </Link>
+                </div>
               </motion.div>
             </motion.div>
           </div>
