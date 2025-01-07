@@ -23,50 +23,6 @@ export type UserData = {
 
 export const signIn = async ({ email, password }: SignInCredentials) => {
   try {
-
-    if (email === 'participant@qiesta.com' && password === 'Asdfgh12345!') {
-      console.log('Skipping sign in for default participant');
-      return {
-        user: {
-          id: '12345',
-          email: email,
-          fullName: 'Participant User',
-          role: 'participant',
-          status: 'approved',
-          createdAt: new Date().toISOString()
-        }
-      };
-    } else if (email === 'partner-approved@qiesta.com' && password === 'Asdfgh12345!') {
-      console.log('Skipping sign in for default partner');
-      return {
-        user: {
-          id: '12346',
-          email: email,
-          fullName: 'Partner Admin',
-          role: 'partner',
-          status: 'approved',
-          createdAt: new Date().toISOString()
-        }
-      };
-    }
-    else if (email === 'partner-pending@qiesta.com' && password === 'Asdfgh12345!') {
-      console.log('Skipping sign in for default partner');
-      return {
-        user: {
-          id: '12347',
-          email: email,
-          fullName: 'Partner Admin',
-          role: 'partner',
-          status: 'pending',
-          createdAt: new Date().toISOString()
-        }
-      };
-    }
-    else {
-      throw new Error('Wrong credentials');
-    }
-
-    console.log('1. Starting sign in...');
     let authResponse;
     try {
       authResponse = await supabase.auth.signInWithPassword({
@@ -77,28 +33,21 @@ export const signIn = async ({ email, password }: SignInCredentials) => {
         throw err;
       });
       
-      // Log raw response immediately
-      console.log('1.5 Auth promise resolved:', JSON.stringify(authResponse));
     } catch (authCallError) {
       console.error('Auth call failed:', authCallError);
       throw authCallError;
     }
-    console.log('2. Raw auth response:', authResponse);
 
     const { data: authData, error: authError } = authResponse;
-    console.log('3. Destructured auth:', { authData, authError });
 
     if (authError) throw authError;
     if (!authData.user) throw new Error('No user returned');
 
-    console.log('4. Valid user found:', authData.user.id);
     const profileResponse = await supabase
       .from('profiles')
       .select('user_type, status')
       .eq('id', authData.user.id)
       .single();
-    
-    console.log('5. Profile response:', profileResponse);
 
     const { data: profile, error: profileError } = profileResponse;
     if (profileError) throw profileError;
@@ -110,7 +59,6 @@ export const signIn = async ({ email, password }: SignInCredentials) => {
         status: profile?.status || 'pending'
       }
     };
-    console.log('6. Final result:', result);
     return result;
 
   } catch (error) {
@@ -121,47 +69,6 @@ export const signIn = async ({ email, password }: SignInCredentials) => {
 
 export const signUp = async ({ email, password, fullName, userType, organization, position }: SignUpCredentials) => {
   try {
-    if (email === 'participant@qiesta.com' && password === 'Asdfgh12345!') {
-      console.log('Skipping sign up for default participant');
-      return {
-        user: {
-          id: '12345',
-          email: email,
-          fullName: fullName,
-          role: userType,
-          status: 'approved',
-          createdAt: new Date().toISOString()
-        }
-      };
-    } else if (email === 'partner-approved@qiesta.com' && password === 'Asdfgh12345!') {
-      console.log('Skipping sign up for default partner');
-      return {
-        user: {
-          id: '12346',
-          email: email,
-          fullName: fullName,
-          role: userType,
-          status: 'approved',
-          createdAt: new Date().toISOString()
-        }
-      };
-    }
-    else if (email === 'partner-pending@qiesta.com' && password === 'Asdfgh12345!') {
-      console.log('Skipping sign up for default partner');
-      return {
-        user: {
-          id: '12347',
-          email: email,
-          fullName: fullName,
-          role: userType,
-          status: 'pending',
-          createdAt: new Date().toISOString()
-        }
-      };
-    }
-    else {
-      throw new Error('Wrong credentials');
-    }
     console.log('Starting sign up...');
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -176,7 +83,6 @@ export const signUp = async ({ email, password, fullName, userType, organization
         }
       }
     })
-    console.log('Sign up result:', { data, error });
 
     if (error) throw error
     return data
@@ -187,7 +93,9 @@ export const signUp = async ({ email, password, fullName, userType, organization
 }
 
 export const signOut = async () => {
+  console.log('Signing out...');
   const { error } = await supabase.auth.signOut()
+  console.log('Signed out');
   if (error) throw error
 }
 

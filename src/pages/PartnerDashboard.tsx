@@ -29,18 +29,7 @@ const PartnerDashboard = () => {
   const [selectedFilter, setSelectedFilter] = useState('all');
   const [showNewChallengeModal, setShowNewChallengeModal] = useState(false);
   const navigate = useNavigate();
-  //const [user, setUser] = useState<User | null>(null);
-  const user: User = {
-    id: '1',
-    fullName: 'John Doe',
-    email: 'partner-approved@qiesta.com',
-    userType: 'partner',
-    app_metadata: {},
-    user_metadata: {},
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    aud: 'authenticated'
-  }
+  const [user, setUser] = useState<User | null>(null);
 
   // New challenge form state
   const [newChallenge, setNewChallenge] = useState({
