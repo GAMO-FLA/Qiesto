@@ -81,7 +81,7 @@ export const Partners = () => {
         </motion.div>
 
         {/* Marquee Sections */}
-        <div className="space-y-8">
+        <div className="space-y-2">
           {/* First Row - Left to Right */}
           <div className="relative group">
             <div className="absolute inset-0 bg-gradient-to-r from-white via-transparent to-white z-10 pointer-events-none" />
@@ -103,11 +103,17 @@ export const Partners = () => {
                   whileHover={{ y: -5 }}
                   className="relative group/item"
                 >
-                  <div className="w-40 h-20 bg-white rounded-2xl shadow-lg shadow-black/[0.03] border border-gray-100 flex flex-col items-center justify-center p-6 hover:border-primary/20 transition-colors duration-300">
-                    <span className="text-lg font-semibold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent group-hover/item:from-primary group-hover/item:to-primary/80 transition-all duration-300">
+                  <div className="w-60 h-15 bg-white rounded-2xl shadow-lg shadow-black/[0.03] border border-gray-100 flex flex-col items-center justify-center px-4 py-3 hover:border-primary/20 transition-colors duration-300">
+                    <span 
+                      className="text-lg font-semibold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent group-hover/item:from-primary group-hover/item:to-primary/80 transition-all duration-300 truncate w-full text-center -translate-y-0.5 group-hover/item:-translate-y-2" 
+                      title={partner.name}
+                    >
                       {partner.name}
                     </span>
-                    <span className="text-xs text-gray-500 mt-1 opacity-0 group-hover/item:opacity-100 transition-opacity duration-300">
+                    <span 
+                      className="text-xs text-gray-500 mt-2 opacity-0 group-hover/item:opacity-100 transition-all duration-300 truncate w-full text-center absolute transform translate-y-2 group-hover/item:translate-y-1" 
+                      title={partner.type}
+                    >
                       {partner.type}
                     </span>
                   </div>
@@ -137,11 +143,17 @@ export const Partners = () => {
                   whileHover={{ y: -5 }}
                   className="relative group/item"
                 >
-                  <div className="w-40 h-20 bg-white rounded-2xl shadow-lg shadow-black/[0.03] border border-gray-100 flex flex-col items-center justify-center p-6 hover:border-primary/20 transition-colors duration-300">
-                    <span className="text-lg font-semibold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent group-hover/item:from-primary group-hover/item:to-primary/80 transition-all duration-300">
+                  <div className="w-60 h-15 bg-white rounded-2xl shadow-lg shadow-black/[0.03] border border-gray-100 flex flex-col items-center justify-center px-4 py-3 hover:border-primary/20 transition-colors duration-300">
+                    <span 
+                      className="text-lg font-semibold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent group-hover/item:from-primary group-hover/item:to-primary/80 transition-all duration-300 truncate w-full text-center -translate-y-0.5 group-hover/item:-translate-y-2" 
+                      title={partner.name}
+                    >
                       {partner.name}
                     </span>
-                    <span className="text-xs text-gray-500 mt-1 opacity-0 group-hover/item:opacity-100 transition-opacity duration-300">
+                    <span 
+                      className="text-xs text-gray-500 mt-2 opacity-0 group-hover/item:opacity-100 transition-all duration-300 truncate w-full text-center absolute transform translate-y-2 group-hover/item:translate-y-1" 
+                      title={partner.type}
+                    >
                       {partner.type}
                     </span>
                   </div>
