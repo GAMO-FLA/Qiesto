@@ -81,7 +81,7 @@ export const SettingsView = ({ user, onSaveChanges }: SettingsViewProps) => {
                   <div className="flex items-center space-x-4">
                     <div className="relative">
                       <Avatar className="h-20 w-20">
-                        <AvatarImage src={previewUrl || user?.organization?.logo} />
+                        <AvatarImage src={previewUrl || user?.organization?.logo || ''} />
                         <AvatarFallback>
                           <Building2 className="h-8 w-8 text-gray-400" />
                         </AvatarFallback>
