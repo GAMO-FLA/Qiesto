@@ -98,7 +98,7 @@ const Index = () => {
           initial={{ opacity: 0, y: 20 }} 
           whileInView={{ opacity: 1, y: 0 }} 
           viewport={{ once: true }} 
-          className="grid grid-cols-1 md:grid-cols-3 gap-8 bg-white rounded-2xl shadow-xl p-8 border border-gray-100" > 
+          className="grid grid-cols-1 md:grid-cols-3 gap-8 bg-white rounded-2xl shadow-xl p-8 border border-gray-100 mx-5 md:mx-0" > 
           {stats.map(({ icon: Icon, value, label, color }) => ( 
             <motion.div key={label} whileHover={{ scale: 1.02 }} 
                   className="flex items-center space-x-4 p-6 rounded-xl bg-gray-50/50 hover:bg-gray-50 transition-colors">
@@ -127,7 +127,8 @@ const Index = () => {
             viewport={{ once: true }}
             className="flex justify-between items-center mb-12"
           >
-            <div>
+            <div className="flex flex-col sm:flex-row sm:justify-between items-center w-full gap-4 mt-4 sm:mt-0">
+            <div className="flex-1">
               <div className="flex items-center gap-2 mb-2">
                 <Star className="w-5 h-5 text-yellow-500" />
                 <Badge variant="secondary" className="bg-yellow-500/10 text-yellow-700">
@@ -137,12 +138,13 @@ const Index = () => {
               <h2 className="text-3xl font-bold mb-2">Featured Challenges</h2>
               <p className="text-gray-600">Explore our most popular innovation challenges</p>
             </div>
-            <Link to="/challenges">
-              <Button variant="ghost" className="group">
+            <Link to="/challenges" className="w-full sm:w-auto">
+              <Button variant="ghost" className="group w-full sm:w-auto">
                 View all challenges
                 <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Button>
             </Link>
+          </div>
           </motion.div>
           
           <motion.div 
