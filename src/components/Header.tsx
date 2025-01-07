@@ -11,6 +11,8 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import { toast } from 'sonner';
+import { signOut } from '@/services/auth';
 
 const navItems = [
   { label: 'Challenges', path: '/challenges' },
@@ -33,9 +35,18 @@ export const Header = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      navigate('/');
+    } catch (error) {
+      toast.error('Error signing out');
+    }
+  };
+
   return (
     <motion.header
-      initial={{ y: -100 }}
+      initial={{ y: 0 }}
       animate={{ y: 0 }}
       className="fixed top-0 left-0 right-0 z-50"
     >
@@ -50,11 +61,11 @@ export const Header = () => {
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center space-x-12">
             <Link 
-              to={isLoggedIn ? "/dashboard" : "/"} 
+              to="/"
               className="flex items-center space-x-3 group"
             >
               <motion.div
-                initial={{ opacity: 0, scale: 0.5, rotate: -20 }}
+                initial={{ opacity: 1, scale: 1, rotate: 0 }}
                 animate={{ opacity: 1, scale: 1, rotate: 0 }}
                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
                 className="w-10 h-10 bg-gradient-to-br from-primary via-primary/90 to-blue-500 rounded-xl flex items-center justify-center shadow-lg shadow-primary/25 group-hover:shadow-primary/40 transition-all duration-300 group-hover:scale-105"
@@ -62,7 +73,7 @@ export const Header = () => {
                 <Sparkles className="h-5 w-5 text-white transform group-hover:rotate-12 transition-transform" />
               </motion.div>
               <motion.span 
-                initial={{ opacity: 0, x: -20 }}
+                initial={{ opacity: 1, x: 0 }}
                 animate={{ opacity: 1, x: 0 }}
                 className="font-bold text-xl bg-gradient-to-r from-gray-900 via-gray-800 to-gray-600 bg-clip-text text-transparent"
               >
@@ -71,28 +82,28 @@ export const Header = () => {
             </Link>
 
             {/* Navigation Items */}
-            {!isLoggedIn && (
-              <nav className="hidden md:flex items-center space-x-2">
-                {navItems.map((item) => (
-                  <Link 
-                    key={item.label} 
-                    to={item.path}
-                    className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
-                      location.pathname === item.path
-                        ? 'text-primary bg-primary/5 shadow-sm'
-                        : 'text-gray-600 hover:text-primary hover:bg-gray-50'
-                    }`}
+            
+            <nav className="hidden md:flex items-center space-x-2">
+              {navItems.map((item) => (
+                <Link 
+                  key={item.label} 
+                  to={item.path}
+                  className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+                    location.pathname === item.path
+                      ? 'text-primary bg-primary/5 shadow-sm'
+                      : 'text-gray-600 hover:text-primary hover:bg-gray-50'
+                  }`}
+                >
+                  <motion.span
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                   >
-                    <motion.span
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      {item.label}
-                    </motion.span>
-                  </Link>
-                ))}
-              </nav>
-            )}
+                    {item.label}
+                  </motion.span>
+                </Link>
+              ))}
+            </nav>
+            
           </div>
 
           <div className="flex items-center space-x-4">
@@ -143,6 +154,15 @@ export const Header = () => {
                     >
                       Settings
                     </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    {isLoggedIn && (
+                    <DropdownMenuItem 
+                    onClick={() => handleLogout()}
+                    className="rounded-lg cursor-pointer"
+                  >
+                    Log Out
+                  </DropdownMenuItem>  
+                    )}
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
