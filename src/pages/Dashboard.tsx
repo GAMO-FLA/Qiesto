@@ -167,7 +167,7 @@ const Dashboard = () => {
 
   const handleSignOut = async () => {
     try {
-      await signOut();
+      // await signOut();
       navigate('/signin');
     } catch (error) {
       toast.error('Error signing out');

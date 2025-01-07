@@ -23,8 +23,9 @@ const navItems = [
 export const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const isLoggedIn = isAuthenticated();
+  //const isLoggedIn = isAuthenticated();
   const [scrolled, setScrolled] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {

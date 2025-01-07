@@ -83,7 +83,7 @@ const PartnerDashboard = () => {
 
   const handleSignOut = async () => {
     try {
-      await signOut();
+      // await signOut();
       navigate('/signin');
     } catch (error) {
       console.error('Error signing out:', error);
