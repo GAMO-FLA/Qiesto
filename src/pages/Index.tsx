@@ -269,7 +269,6 @@ const Index = () => {
               <Link to="/challenges">
                 <Button 
                   size="lg" 
-                  variant="outline" 
                   className="text-white border-white/20 hover:bg-white/10 text-lg px-8"
                 >
                   Explore Challenges
