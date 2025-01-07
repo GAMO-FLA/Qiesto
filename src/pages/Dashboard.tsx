@@ -344,20 +344,20 @@ const Dashboard = () => {
       isScrolled ? "shadow-sm" : ""
     )}>
       <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between p-4 lg:p-6">
+        <div className="flex items-center justify-between p-4 lg:p-0">
           <button
             onClick={handleMobileMenuToggle}
             className="lg:hidden p-2 rounded-lg hover:bg-gray-100"
           >
             <Menu className="h-6 w-6 text-gray-600" />
           </button>
-          <div className="flex-1 lg:flex lg:items-center lg:justify-between">
-            <div className="lg:flex lg:items-center lg:space-x-6">
+          {/* <div className="flex-1 lg:flex lg:items-center lg:justify-between">
+            {/* <div className="lg:flex lg:items-center lg:space-x-6">
               <h2 className="hidden lg:block text-xl font-semibold text-gray-800">
                 {activeView.charAt(0).toUpperCase() + activeView.slice(1)}
               </h2>
-            </div>
-            <div className="flex items-center space-x-4">
+            </div> */}
+            {/* <div className="flex items-center space-x-4">
               <NotificationsDropdown />
               <Link to="/challenges" className="hover:no-underline">
                 <Button className="bg-primary text-white rounded-xl hover:bg-primary/90 transition-colors">
@@ -366,8 +366,8 @@ const Dashboard = () => {
                   <span className="sm:hidden">Browse</span>
                 </Button>
               </Link>
-            </div>
-          </div>
+            </div> 
+          </div> */}
         </div>
       </div>
     </div>
@@ -573,28 +573,31 @@ const Dashboard = () => {
         return (
           <>
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8 space-y-4 lg:space-y-0">
-              <div>
-                <motion.div
-                  initial={{ opacity: 0, y: -20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                >
-                  <h1 className="text-2xl lg:text-3xl font-bold mb-2">
-                    Welcome back, {user?.fullName || 'Admin'}
-                  </h1>
-                  <p className="text-gray-600">
-                    Here's what's happening with your challenges
-                  </p>
-                </motion.div>
-              </div>
-              <div className="flex items-center space-x-4">
-                <NotificationsDropdown />
-                <Link to="/challenges" className="hover:no-underline">
-                  <Button className="bg-primary text-white rounded-xl hover:bg-primary/90 transition-colors">
-                    <Plus className="mr-2 h-5 w-5" />
-                    <span className="hidden sm:inline">Browse Challenges</span>
-                    <span className="sm:hidden">Browse</span>
-                  </Button>
-                </Link>
+              <div className="flex-1 lg:flex lg:items-center lg:justify-between">
+                  <div className="lg:flex lg:items-center lg:space-x-6">
+                    <motion.div
+                      initial={{ opacity: 0, y: -20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                    >
+                      <h1 className="text-2xl lg:text-3xl font-bold mb-2">
+                        Welcome back, {user?.fullName || 'Admin'}
+                      </h1>
+                      <p className="text-gray-600">
+                        Here's what's happening with your challenges
+                      </p>
+                    </motion.div>
+                  </div>
+                  <div className="flex items-center space-x-4 w-full relative">
+                    <NotificationsDropdown />
+                    <Link to="/challenges" className="hover:no-underline">
+                      <Button className="bg-primary text-white rounded-xl hover:bg-primary/90 transition-colors"
+                      variant="default" >
+                        <Plus className="mr-2 h-5 w-5" />
+                        <span className="hidden sm:inline">Browse Challenges</span>
+                        <span className="sm:hidden">Browse</span>
+                      </Button>
+                    </Link>
+                  </div> 
               </div>
             </div>
 
@@ -785,19 +788,34 @@ const Dashboard = () => {
         "pt-24"
       )}>
         <div className="max-w-7xl mx-auto">
-          <div className="grid gap-6">
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
-              <motion.div
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-              >
-                <h1 className="text-2xl lg:text-3xl font-bold mb-2">
-                  Welcome back, {user?.fullName || 'Admin'}
-                </h1>
-                <p className="text-gray-600 text-sm sm:text-base">
-                  Here's what's happening with your challenges
-                </p>
-              </motion.div>
+          <div className="grid gap-2">
+          ` <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8 space-y-4 lg:space-y-0 w-full">
+              <div className="lg:flex lg:items-center lg:space-x-6 lg:flex-1">
+                <motion.div
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                >
+                  <h1 className="text-2xl lg:text-3xl font-bold mb-2">
+                    Welcome back, {user?.fullName || 'Admin'}
+                  </h1>
+                  <p className="text-gray-600">
+                    Here's what's happening with your challenges
+                  </p>
+                </motion.div>
+              </div>
+              <div className="flex items-center space-x-4 lg:flex-shrink-0"> {/* Removed w-full */}
+                <NotificationsDropdown />
+                <Link to="/challenges" className="hover:no-underline">
+                  <Button 
+                    className="bg-primary text-white rounded-xl hover:bg-primary/90 transition-colors"
+                    variant="default"
+                  >
+                    <Plus className="mr-2 h-5 w-5" />
+                    <span className="hidden sm:inline">Browse Challenges</span>
+                    <span className="sm:hidden">Browse</span>
+                  </Button>
+                </Link>
+              </div> 
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
