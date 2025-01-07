@@ -174,8 +174,8 @@ const Dashboard = () => {
   // }
 
   const user = {
-    fullName: 'John Doe',
-    email: 'johnDoe@gmail.com'
+    fullName: 'Moise Gasana',
+    email: 'gamoflamb@gmail.com'
   }
 
   const MENU_ITEMS = [
@@ -343,22 +343,31 @@ const Dashboard = () => {
       "bg-gray-50/80 backdrop-blur-sm",
       isScrolled ? "shadow-sm" : ""
     )}>
-      <div className="flex items-center justify-between p-4 lg:p-6">
-        <button
-          onClick={handleMobileMenuToggle}
-          className="lg:hidden p-2 rounded-lg hover:bg-gray-100"
-        >
-          <Menu className="h-6 w-6 text-gray-600" />
-        </button>
-        <div className="flex items-center space-x-2 sm:space-x-4">
-          <NotificationsDropdown />
-          <Link to="/challenges" className="hover:no-underline">
-            <Button className="bg-primary text-white rounded-xl hover:bg-primary/90 transition-colors">
-              <Plus className="mr-2 h-5 w-5" />
-              <span className="hidden sm:inline">Browse Challenges</span>
-              <span className="sm:hidden">Browse</span>
-            </Button>
-          </Link>
+      <div className="max-w-7xl mx-auto">
+        <div className="flex items-center justify-between p-4 lg:p-6">
+          <button
+            onClick={handleMobileMenuToggle}
+            className="lg:hidden p-2 rounded-lg hover:bg-gray-100"
+          >
+            <Menu className="h-6 w-6 text-gray-600" />
+          </button>
+          <div className="flex-1 lg:flex lg:items-center lg:justify-between">
+            <div className="lg:flex lg:items-center lg:space-x-6">
+              <h2 className="hidden lg:block text-xl font-semibold text-gray-800">
+                {activeView.charAt(0).toUpperCase() + activeView.slice(1)}
+              </h2>
+            </div>
+            <div className="flex items-center space-x-4">
+              <NotificationsDropdown />
+              <Link to="/challenges" className="hover:no-underline">
+                <Button className="bg-primary text-white rounded-xl hover:bg-primary/90 transition-colors">
+                  <Plus className="mr-2 h-5 w-5" />
+                  <span className="hidden sm:inline">Browse Challenges</span>
+                  <span className="sm:hidden">Browse</span>
+                </Button>
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -776,73 +785,50 @@ const Dashboard = () => {
         "pt-24"
       )}>
         <div className="max-w-7xl mx-auto">
-          <div className="mb-8">
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-            >
-              <h1 className="text-2xl lg:text-3xl font-bold mb-2">
-                Welcome back, {user?.fullName || 'Admin'}
-              </h1>
-              <p className="text-gray-600 text-sm sm:text-base">
-                Here's what's happening with your challenges
-              </p>
-            </motion.div>
-          </div>
+          <div className="grid gap-6">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+              <motion.div
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <h1 className="text-2xl lg:text-3xl font-bold mb-2">
+                  Welcome back, {user?.fullName || 'Admin'}
+                </h1>
+                <p className="text-gray-600 text-sm sm:text-base">
+                  Here's what's happening with your challenges
+                </p>
+              </motion.div>
+            </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8">
-            {stats.map((stat, index) => (
-              <StatsCard key={stat.label} stat={stat} index={index} />
-            ))}
-          </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+              {stats.map((stat, index) => (
+                <StatsCard key={stat.label} stat={stat} index={index} />
+              ))}
+            </div>
 
-          <div className="bg-white rounded-xl shadow-sm p-4 lg:p-6 mb-8">
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6 space-y-4 lg:space-y-0">
-              <h2 className="text-xl font-semibold">Your Challenges</h2>
-              <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-4">
-                <div className="relative w-full sm:w-64">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <Input
-                    placeholder="Search challenges..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10 w-full"
+            <div className="bg-white rounded-xl shadow-sm">
+              <div className="p-6 border-b border-gray-100">
+                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+                  <h2 className="text-xl font-semibold">Your Challenges</h2>
+                  <SearchAndFilter
+                    searchQuery={searchQuery}
+                    setSearchQuery={setSearchQuery}
+                    selectedFilter={selectedFilter}
+                    setSelectedFilter={setSelectedFilter}
                   />
                 </div>
-                
-                <select
-                  value={selectedFilter}
-                  onChange={(e) => setSelectedFilter(e.target.value)}
-                  className="w-full sm:w-auto border border-gray-200 rounded-lg px-3 py-2 text-sm"
-                >
-                  <option value="all">All Status</option>
-                  <option value="active">Active</option>
-                  <option value="upcoming">Upcoming</option>
-                  <option value="completed">Completed</option>
-                </select>
+              </div>
+
+              <div className="p-6">
+                <div className="space-y-4">
+                  <AnimatePresence>
+                    {displayedChallenges.map((challenge, index) => (
+                      <ChallengeCard key={challenge.id} challenge={challenge} index={index} />
+                    ))}
+                  </AnimatePresence>
+                </div>
               </div>
             </div>
-
-            <div className="space-y-4">
-              <AnimatePresence>
-                {displayedChallenges.map((challenge, index) => (
-                  <ChallengeCard key={challenge.id} challenge={challenge} index={index} />
-                ))}
-              </AnimatePresence>
-            </div>
-
-            {filteredChallenges.length > 3 && (
-              <div className="mt-6 text-center">
-                <Button
-                  variant="outline"
-                  onClick={() => setShowAllChallenges(!showAllChallenges)}
-                  className="text-primary hover:bg-primary/5"
-                >
-                  {showAllChallenges ? 'Show Less' : 'View All Challenges'}
-                  <ChevronDown className={`ml-2 h-4 w-4 transition-transform ${showAllChallenges ? 'rotate-180' : ''}`} />
-                </Button>
-              </div>
-            )}
           </div>
         </div>
       </main>
