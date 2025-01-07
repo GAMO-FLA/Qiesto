@@ -3,53 +3,62 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
   Github, Twitter, Linkedin, Mail, 
-  ArrowUpRight, Heart 
+  ArrowUpRight, Heart
 } from 'lucide-react';
-import { Button } from './ui/button';
 import Logo from './Logo';
 
 export const Footer = () => {
   const links = {
-    product: [
+    platform: [
       { label: 'Features', href: '/features' },
       { label: 'Challenges', href: '/challenges' },
       { label: 'Enterprise', href: '/enterprise' },
-      { label: 'Partners', href: '/partners' },
+      { label: 'Success Stories', href: '/stories' },
     ],
     company: [
-      { label: 'About', href: '/about' },
-      { label: 'Blog', href: '/blog' },
+      { label: 'About Us', href: '/about' },
       { label: 'Careers', href: '/careers' },
+      { label: 'Partners', href: '/partners' },
       { label: 'Contact', href: '/contact' },
     ],
     resources: [
       { label: 'Documentation', href: '/docs' },
       { label: 'Help Center', href: '/help' },
       { label: 'Community', href: '/community' },
-      { label: 'Terms of Service', href: '/terms' },
+      { label: 'Blog', href: '/blog' },
     ],
   };
 
+  const socialLinks = [
+    { icon: Github, href: '#', label: 'GitHub' },
+    { icon: Twitter, href: '#', label: 'Twitter' },
+    { icon: Linkedin, href: '#', label: 'LinkedIn' },
+    { icon: Mail, href: '#', label: 'Email' },
+  ];
+
   return (
-    <footer className="bg-white border-t border-gray-100">
+    <footer className="border-t border-gray-100 bg-gradient-to-b from-white to-gray-50/50">
       <div className="container mx-auto px-4 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12">
           {/* Brand Section */}
-          <div className="space-y-6">
+          <div className="lg:col-span-2 space-y-6">
             <Logo />
-            <p className="text-gray-600 text-sm leading-relaxed">
-              Empowering innovation and collaboration across East Africa through our 
-              cutting-edge challenge platform.
+            <p className="text-gray-600 text-sm leading-relaxed max-w-sm">
+              Empowering innovation across East Africa through our cutting-edge 
+              challenge platform. Join us in building the future.
             </p>
-            <div className="flex items-center space-x-4">
-              {[Github, Twitter, Linkedin, Mail].map((Icon, i) => (
+            <div className="flex items-center space-x-3">
+              {socialLinks.map((social, i) => (
                 <motion.a
                   key={i}
-                  href="#"
+                  href={social.href}
+                  aria-label={social.label}
                   whileHover={{ y: -2 }}
-                  className="p-2 rounded-lg hover:bg-gray-50 text-gray-600 hover:text-primary transition-colors"
+                  className="p-2.5 rounded-xl hover:bg-white text-gray-600 hover:text-primary 
+                    transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 border
+                    border-transparent hover:border-gray-100"
                 >
-                  <Icon className="h-5 w-5" />
+                  <social.icon className="h-5 w-5" />
                 </motion.a>
               ))}
             </div>
@@ -66,10 +75,12 @@ export const Footer = () => {
                   <li key={item.label}>
                     <Link
                       to={item.href}
-                      className="text-gray-600 hover:text-primary transition-colors inline-flex items-center group"
+                      className="text-gray-600 hover:text-primary transition-colors inline-flex 
+                        items-center group text-sm"
                     >
                       {item.label}
-                      <ArrowUpRight className="h-3 w-3 ml-1 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <ArrowUpRight className="h-3 w-3 ml-1 opacity-0 -translate-y-1 
+                        group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-200" />
                     </Link>
                   </li>
                 ))}
@@ -82,16 +93,16 @@ export const Footer = () => {
         <div className="mt-16 pt-8 border-t border-gray-100">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <div className="text-sm text-gray-600 flex items-center">
-              Made with <Heart className="h-4 w-4 mx-1 text-red-500" /> in Kigali
+              Made with <Heart className="h-4 w-4 mx-1.5 text-red-500 hover:animate-pulse" /> in Kigali
             </div>
-            <div className="flex items-center space-x-4 text-sm text-gray-600">
+            <div className="flex items-center space-x-6 text-sm text-gray-600">
               <Link to="/privacy" className="hover:text-primary transition-colors">
                 Privacy Policy
               </Link>
-              <span>•</span>
               <Link to="/terms" className="hover:text-primary transition-colors">
                 Terms of Service
               </Link>
+              <span className="text-gray-400">© {new Date().getFullYear()} GAMO & FLA. All rights reserved.</span>
             </div>
           </div>
         </div>
