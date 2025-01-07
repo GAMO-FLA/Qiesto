@@ -9,13 +9,14 @@ import { toast } from 'sonner';
 import { 
   LayoutDashboard, Users, Trophy, Settings, LogOut, Plus,
   ChevronRight, ChevronDown, Sparkles, TrendingUp, Activity,
-  Target, Search, Filter, Clock, Star, Building2, ArrowRight, Key, Bell, Mail, Shield
+  Target, Search, Filter, Clock, Star, Building2, ArrowRight, Key, Bell, Mail, Shield, Menu, X
 } from 'lucide-react';
 import { Switch } from "@/components/ui/switch";
 import NewChallengeModal from '@/components/dashboard/NewChallengeModal';
 import NotificationsDropdown from '@/components/dashboard/NotificationsDropdown';
 import { User } from '@/types/user';
 import { useAuth } from '@/contexts/AuthContext'
+import { cn } from "@/lib/utils";
 
 const Dashboard = () => {
   //const { user, loading } = useAuth() as { user: User | null, loading: boolean };
@@ -24,6 +25,17 @@ const Dashboard = () => {
   const [showAllChallenges, setShowAllChallenges] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('all');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 0);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   // if (loading) {
   //   return <div>Loading...</div>;
@@ -173,6 +185,60 @@ const Dashboard = () => {
       toast.error('Error signing out');
     }
   };
+
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
+  const StatsCard = ({ stat, index }) => (
+    <motion.div
+      key={stat.label}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.1 }}
+      className="bg-white rounded-xl p-4 lg:p-6 shadow-sm hover:shadow-md transition-all"
+    >
+      <div className="flex items-center justify-between mb-4">
+        <div className={`p-2 sm:p-3 rounded-xl ${stat.bg}`}>
+          <stat.icon className={`h-5 w-5 sm:h-6 sm:w-6 ${stat.color}`} />
+        </div>
+        <TrendingUp className="h-4 w-4 text-green-500" />
+      </div>
+      <p className="text-gray-600 text-xs sm:text-sm mb-1">{stat.label}</p>
+      <p className="text-2xl sm:text-3xl font-bold mb-2">{stat.value}</p>
+      <p className="text-green-500 text-xs sm:text-sm flex items-center">
+        <Activity className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+        {stat.change}
+      </p>
+    </motion.div>
+  );
+
+  const Header = () => (
+    <div className={cn(
+      "fixed top-0 right-0 lg:left-72 left-0 z-40 transition-all duration-200",
+      "bg-gray-50/80 backdrop-blur-sm",
+      isScrolled ? "shadow-sm" : ""
+    )}>
+      <div className="flex items-center justify-between p-4 lg:p-6">
+        <button
+          onClick={toggleMobileMenu}
+          className="lg:hidden p-2 rounded-lg hover:bg-gray-100"
+        >
+          <Menu className="h-6 w-6 text-gray-600" />
+        </button>
+        <div className="flex items-center space-x-2 sm:space-x-4">
+          <NotificationsDropdown />
+          <Link to="/challenges" className="hover:no-underline">
+            <Button className="bg-primary text-white rounded-xl hover:bg-primary/90 transition-colors">
+              <Plus className="mr-2 h-5 w-5" />
+              <span className="hidden sm:inline">Browse Challenges</span>
+              <span className="sm:hidden">Browse</span>
+            </Button>
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
 
   const renderMainContent = () => {
     switch (activeView) {
@@ -448,14 +514,13 @@ const Dashboard = () => {
       default:
         return (
           <>
-            {/* Header */}
-            <div className="flex items-center justify-between mb-8">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8 space-y-4 lg:space-y-0">
               <div>
                 <motion.div
                   initial={{ opacity: 0, y: -20 }}
                   animate={{ opacity: 1, y: 0 }}
                 >
-                  <h1 className="text-3xl font-bold mb-2">
+                  <h1 className="text-2xl lg:text-3xl font-bold mb-2">
                     Welcome back, {user?.fullName || 'Admin'}
                   </h1>
                   <p className="text-gray-600">
@@ -468,59 +533,37 @@ const Dashboard = () => {
                 <Link to="/challenges" className="hover:no-underline">
                   <Button className="bg-primary text-white rounded-xl hover:bg-primary/90 transition-colors">
                     <Plus className="mr-2 h-5 w-5" />
-                    Browse Challenges
+                    <span className="hidden sm:inline">Browse Challenges</span>
+                    <span className="sm:hidden">Browse</span>
                   </Button>
                 </Link>
               </div>
             </div>
 
-            {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8">
               {stats.map((stat, index) => (
-                <motion.div
-                  key={stat.label}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-all"
-                >
-                  <div className="flex items-center justify-between mb-4">
-                    <div className={`p-3 rounded-xl ${stat.bg}`}>
-                      <stat.icon className={`h-6 w-6 ${stat.color}`} />
-                    </div>
-                    <TrendingUp className="h-4 w-4 text-green-500" />
-                  </div>
-                  <p className="text-gray-600 text-sm mb-1">{stat.label}</p>
-                  <p className="text-3xl font-bold mb-2">{stat.value}</p>
-                  <p className="text-green-500 text-sm flex items-center">
-                    <Activity className="h-4 w-4 mr-1" />
-                    {stat.change}
-                  </p>
-                </motion.div>
+                <StatsCard key={stat.label} stat={stat} index={index} />
               ))}
             </div>
 
-            {/* Challenges Section */}
-            <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
-              <div className="flex items-center justify-between mb-6">
+            <div className="bg-white rounded-xl shadow-sm p-4 lg:p-6 mb-8">
+              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6 space-y-4 lg:space-y-0">
                 <h2 className="text-xl font-semibold">Your Challenges</h2>
-                <div className="flex items-center space-x-4">
-                  {/* Search */}
-                  <div className="relative">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-4">
+                  <div className="relative w-full sm:w-64">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                     <Input
                       placeholder="Search challenges..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-10 w-64"
+                      className="pl-10 w-full"
                     />
                   </div>
                   
-                  {/* Filter */}
                   <select
                     value={selectedFilter}
                     onChange={(e) => setSelectedFilter(e.target.value)}
-                    className="border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                    className="w-full sm:w-auto border border-gray-200 rounded-lg px-3 py-2 text-sm"
                   >
                     <option value="all">All Status</option>
                     <option value="active">Active</option>
@@ -530,7 +573,6 @@ const Dashboard = () => {
                 </div>
               </div>
 
-              {/* Challenges List */}
               <div className="space-y-4">
                 <AnimatePresence>
                   {displayedChallenges.map((challenge, index) => (
@@ -540,9 +582,9 @@ const Dashboard = () => {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -20 }}
                       transition={{ delay: index * 0.1 }}
-                      className="group bg-gray-50 rounded-xl p-6 hover:bg-gray-100 transition-all cursor-pointer"
+                      className="group bg-gray-50 rounded-xl p-4 lg:p-6 hover:bg-gray-100 transition-all cursor-pointer"
                     >
-                      <div className="flex items-start justify-between">
+                      <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between space-y-4 lg:space-y-0">
                         <div className="flex items-start space-x-4">
                           <div className="p-3 bg-primary/10 rounded-xl">
                             <Trophy className="h-5 w-5 text-primary" />
@@ -556,21 +598,21 @@ const Dashboard = () => {
                             </p>
                             <div className="flex items-center space-x-4 text-sm">
                               <div className="flex items-center text-gray-500">
-                                <Building2 className="h-4 w-4 mr-1" />
-                                {challenge.organization}
+                                <Building2 className="h-4 w-4 mr-1 flex-shrink-0" />
+                                <span className="truncate">{challenge.organization}</span>
                               </div>
                               <div className="flex items-center text-gray-500">
-                                <Users className="h-4 w-4 mr-1" />
-                                {challenge.participants} participants
+                                <Users className="h-4 w-4 mr-1 flex-shrink-0" />
+                                <span>{challenge.participants} participants</span>
                               </div>
                               <div className="flex items-center text-gray-500">
-                                <Clock className="h-4 w-4 mr-1" />
-                                {challenge.daysLeft} days left
+                                <Clock className="h-4 w-4 mr-1 flex-shrink-0" />
+                                <span>{challenge.daysLeft} days left</span>
                               </div>
                             </div>
                           </div>
                         </div>
-                        <div className="flex flex-col items-end space-y-2">
+                        <div className="flex flex-row lg:flex-col items-center lg:items-end justify-between lg:justify-start space-y-0 lg:space-y-2">
                           <Badge 
                             variant="secondary"
                             className={`${
@@ -634,8 +676,28 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-50/50">
-      {/* Sidebar */}
-      <aside className="fixed left-0 top-0 h-screen w-72 bg-white border-r border-gray-200 z-50">
+      <Header />
+      
+      {isMobileMenuOpen && (
+        <div 
+          className="lg:hidden fixed inset-0 bg-black/50 z-40"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
+      <aside className={cn(
+        "fixed left-0 top-0 h-screen bg-white border-r border-gray-200 z-50",
+        "w-72 transition-transform duration-200 ease-in-out",
+        "lg:translate-x-0",
+        isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+      )}>
+        <button
+          onClick={() => setIsMobileMenuOpen(false)}
+          className="lg:hidden absolute top-4 right-4 p-2 rounded-lg hover:bg-gray-100"
+        >
+          <X className="h-6 w-6 text-gray-600" />
+        </button>
+
         <div className="flex flex-col h-full">
           <div className="p-6 border-b border-gray-100">
             <Link to="/" className="flex items-center space-x-2">
@@ -734,9 +796,156 @@ const Dashboard = () => {
         </div>
       </aside>
 
-      {/* Main Content */}
-      <main className="ml-72 p-8">
-        {renderMainContent()}
+      <main className={cn(
+        "transition-all duration-200 ease-in-out",
+        "lg:ml-72 p-4 lg:p-8",
+        "pt-24"
+      )}>
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-8">
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <h1 className="text-2xl lg:text-3xl font-bold mb-2">
+                Welcome back, {user?.fullName || 'Admin'}
+              </h1>
+              <p className="text-gray-600 text-sm sm:text-base">
+                Here's what's happening with your challenges
+              </p>
+            </motion.div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8">
+            {stats.map((stat, index) => (
+              <StatsCard key={stat.label} stat={stat} index={index} />
+            ))}
+          </div>
+
+          <div className="bg-white rounded-xl shadow-sm p-4 lg:p-6 mb-8">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6 space-y-4 lg:space-y-0">
+              <h2 className="text-xl font-semibold">Your Challenges</h2>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-4">
+                <div className="relative w-full sm:w-64">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    placeholder="Search challenges..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10 w-full"
+                  />
+                </div>
+                
+                <select
+                  value={selectedFilter}
+                  onChange={(e) => setSelectedFilter(e.target.value)}
+                  className="w-full sm:w-auto border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                >
+                  <option value="all">All Status</option>
+                  <option value="active">Active</option>
+                  <option value="upcoming">Upcoming</option>
+                  <option value="completed">Completed</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <AnimatePresence>
+                {displayedChallenges.map((challenge, index) => (
+                  <motion.div
+                    key={challenge.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ delay: index * 0.1 }}
+                    className="group bg-gray-50 rounded-xl p-4 lg:p-6 hover:bg-gray-100 transition-all cursor-pointer"
+                  >
+                    <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between space-y-4 lg:space-y-0">
+                      <div className="flex items-start space-x-4">
+                        <div className="p-3 bg-primary/10 rounded-xl">
+                          <Trophy className="h-5 w-5 text-primary" />
+                        </div>
+                        <div>
+                          <h3 className="font-medium text-lg mb-1 group-hover:text-primary transition-colors">
+                            {challenge.title}
+                          </h3>
+                          <p className="text-gray-600 text-sm mb-3">
+                            {challenge.description}
+                          </p>
+                          <div className="flex items-center space-x-4 text-sm">
+                            <div className="flex items-center text-gray-500">
+                              <Building2 className="h-4 w-4 mr-1 flex-shrink-0" />
+                              <span className="truncate">{challenge.organization}</span>
+                            </div>
+                            <div className="flex items-center text-gray-500">
+                              <Users className="h-4 w-4 mr-1 flex-shrink-0" />
+                              <span>{challenge.participants} participants</span>
+                            </div>
+                            <div className="flex items-center text-gray-500">
+                              <Clock className="h-4 w-4 mr-1 flex-shrink-0" />
+                              <span>{challenge.daysLeft} days left</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex flex-row lg:flex-col items-center lg:items-end justify-between lg:justify-start space-y-0 lg:space-y-2">
+                        <Badge 
+                          variant="secondary"
+                          className={`${
+                            challenge.status === 'Active' 
+                              ? 'bg-green-100 text-green-700' 
+                              : 'bg-blue-100 text-blue-700'
+                          } rounded-lg px-3 py-1`}
+                        >
+                          {challenge.status}
+                        </Badge>
+                        <p className="text-primary font-semibold">
+                          {challenge.prize}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="mt-4 pt-4 border-t border-gray-200">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-4">
+                          <div>
+                            <p className="text-sm text-gray-600">Submissions</p>
+                            <p className="font-medium">{challenge.submissions}</p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-gray-600">Progress</p>
+                            <div className="w-32 h-2 bg-gray-200 rounded-full mt-1">
+                              <div 
+                                className="h-full bg-primary rounded-full"
+                                style={{ width: `${challenge.progress}%` }}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                        <Button variant="ghost" className="text-primary">
+                          View Details
+                          <ChevronRight className="ml-2 h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
+
+            {filteredChallenges.length > 3 && (
+              <div className="mt-6 text-center">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowAllChallenges(!showAllChallenges)}
+                  className="text-primary hover:bg-primary/5"
+                >
+                  {showAllChallenges ? 'Show Less' : 'View All Challenges'}
+                  <ChevronDown className={`ml-2 h-4 w-4 transition-transform ${showAllChallenges ? 'rotate-180' : ''}`} />
+                </Button>
+              </div>
+            )}
+          </div>
+        </div>
       </main>
     </div>
   );
