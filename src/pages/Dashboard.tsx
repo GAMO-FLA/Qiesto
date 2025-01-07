@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -17,6 +17,128 @@ import NotificationsDropdown from '@/components/dashboard/NotificationsDropdown'
 import { User } from '@/types/user';
 import { useAuth } from '@/contexts/AuthContext'
 import { cn } from "@/lib/utils";
+import { useMediaQuery } from '@/hooks/useMediaQuery';
+
+const ChallengeCard = ({ challenge, index }) => {
+  const isLargeScreen = useMediaQuery('(min-width: 1024px)');
+
+  return (
+    <motion.div
+      key={challenge.id}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ delay: index * 0.1 }}
+      className="group bg-gray-50 rounded-xl p-4 lg:p-6 hover:bg-gray-100 transition-all cursor-pointer"
+    >
+      <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between space-y-4 lg:space-y-0">
+        <div className="flex items-start space-x-4">
+          <div className="p-2 sm:p-3 bg-primary/10 rounded-xl flex-shrink-0">
+            <Trophy className="h-5 w-5 text-primary" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <h3 className="font-medium text-lg mb-1 group-hover:text-primary transition-colors truncate">
+              {challenge.title}
+            </h3>
+            <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+              {challenge.description}
+            </p>
+            <div className="flex flex-wrap gap-3 text-sm">
+              <div className="flex items-center text-gray-500 min-w-[140px]">
+                <Building2 className="h-4 w-4 mr-1 flex-shrink-0" />
+                <span className="truncate">{challenge.organization}</span>
+              </div>
+              <div className="flex items-center text-gray-500">
+                <Users className="h-4 w-4 mr-1 flex-shrink-0" />
+                <span>{challenge.participants} participants</span>
+              </div>
+              <div className="flex items-center text-gray-500">
+                <Clock className="h-4 w-4 mr-1 flex-shrink-0" />
+                <span>{challenge.daysLeft} days left</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="flex flex-row lg:flex-col items-center lg:items-end justify-between lg:justify-start space-y-0 lg:space-y-2 flex-shrink-0">
+          <Badge 
+            variant="secondary"
+            className={cn(
+              "rounded-lg px-3 py-1",
+              challenge.status === 'Active' 
+                ? 'bg-green-100 text-green-700' 
+                : 'bg-blue-100 text-blue-700'
+            )}
+          >
+            {challenge.status}
+          </Badge>
+          <p className="text-primary font-semibold">
+            {challenge.prize}
+          </p>
+        </div>
+      </div>
+      
+      <div className="mt-4 pt-4 border-t border-gray-200">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-4 flex-wrap">
+            <div>
+              <p className="text-sm text-gray-600">Submissions</p>
+              <p className="font-medium">{challenge.submissions}</p>
+            </div>
+            <div className="flex-1 min-w-[150px]">
+              <p className="text-sm text-gray-600">Progress</p>
+              <div className="w-full sm:w-32 h-2 bg-gray-200 rounded-full mt-1">
+                <div 
+                  className="h-full bg-primary rounded-full transition-all duration-300"
+                  style={{ width: `${challenge.progress}%` }}
+                />
+              </div>
+            </div>
+          </div>
+          <Button variant="ghost" className="text-primary w-full sm:w-auto justify-center">
+            View Details
+            <ChevronRight className="ml-2 h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
+const SearchAndFilter = ({ searchQuery, setSearchQuery, selectedFilter, setSelectedFilter }) => (
+  <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-4 w-full lg:w-auto">
+    <div className="relative w-full sm:w-64">
+      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+      <Input
+        placeholder="Search challenges..."
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        className="pl-10 w-full"
+      />
+    </div>
+    
+    <select
+      value={selectedFilter}
+      onChange={(e) => setSelectedFilter(e.target.value)}
+      className="w-full sm:w-auto border border-gray-200 rounded-lg px-3 py-2 text-sm"
+    >
+      <option value="all">All Status</option>
+      <option value="active">Active</option>
+      <option value="upcoming">Upcoming</option>
+      <option value="completed">Completed</option>
+    </select>
+  </div>
+);
+
+const useChallenges = (allChallenges, searchQuery, selectedFilter) => {
+  return useMemo(() => {
+    return allChallenges.filter(challenge => {
+      const matchesSearch = challenge.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          challenge.organization.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesFilter = selectedFilter === 'all' || challenge.status.toLowerCase() === selectedFilter;
+      return matchesSearch && matchesFilter;
+    });
+  }, [allChallenges, searchQuery, selectedFilter]);
+};
 
 const Dashboard = () => {
   //const { user, loading } = useAuth() as { user: User | null, loading: boolean };
@@ -167,14 +289,7 @@ const Dashboard = () => {
     }
   ];
 
-  const filteredChallenges = allChallenges
-    .filter(challenge => {
-      const matchesSearch = challenge.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          challenge.organization.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesFilter = selectedFilter === 'all' || challenge.status.toLowerCase() === selectedFilter;
-      return matchesSearch && matchesFilter;
-    });
-
+  const filteredChallenges = useChallenges(allChallenges, searchQuery, selectedFilter);
   const displayedChallenges = showAllChallenges ? filteredChallenges : filteredChallenges.slice(0, 3);
 
   const handleSignOut = async () => {
@@ -186,9 +301,18 @@ const Dashboard = () => {
     }
   };
 
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
-  };
+  const handleMobileMenuToggle = useCallback(() => {
+    setIsMobileMenuOpen(prev => !prev);
+    // Prevent body scroll when menu is open
+    document.body.style.overflow = isMobileMenuOpen ? 'auto' : 'hidden';
+  }, [isMobileMenuOpen]);
+
+  // Clean up effect
+  useEffect(() => {
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
+  }, []);
 
   const StatsCard = ({ stat, index }) => (
     <motion.div
@@ -221,7 +345,7 @@ const Dashboard = () => {
     )}>
       <div className="flex items-center justify-between p-4 lg:p-6">
         <button
-          onClick={toggleMobileMenu}
+          onClick={handleMobileMenuToggle}
           className="lg:hidden p-2 rounded-lg hover:bg-gray-100"
         >
           <Menu className="h-6 w-6 text-gray-600" />
@@ -275,82 +399,7 @@ const Dashboard = () => {
 
             <div className="grid gap-4">
               {filteredChallenges.map((challenge, index) => (
-                <motion.div
-                  key={challenge.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ delay: index * 0.1 }}
-                  className="group bg-gray-50 rounded-xl p-6 hover:bg-gray-100 transition-all cursor-pointer"
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-start space-x-4">
-                      <div className="p-3 bg-primary/10 rounded-xl">
-                        <Trophy className="h-5 w-5 text-primary" />
-                      </div>
-                      <div>
-                        <h3 className="font-medium text-lg mb-1 group-hover:text-primary transition-colors">
-                          {challenge.title}
-                        </h3>
-                        <p className="text-gray-600 text-sm mb-3">
-                          {challenge.description}
-                        </p>
-                        <div className="flex items-center space-x-4 text-sm">
-                          <div className="flex items-center text-gray-500">
-                            <Building2 className="h-4 w-4 mr-1" />
-                            {challenge.organization}
-                          </div>
-                          <div className="flex items-center text-gray-500">
-                            <Users className="h-4 w-4 mr-1" />
-                            {challenge.participants} participants
-                          </div>
-                          <div className="flex items-center text-gray-500">
-                            <Clock className="h-4 w-4 mr-1" />
-                            {challenge.daysLeft} days left
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex flex-col items-end space-y-2">
-                      <Badge 
-                        variant="secondary"
-                        className={`${
-                          challenge.status === 'Active' 
-                            ? 'bg-green-100 text-green-700' 
-                            : 'bg-blue-100 text-blue-700'
-                        } rounded-lg px-3 py-1`}
-                      >
-                        {challenge.status}
-                      </Badge>
-                      <p className="text-primary font-semibold">
-                        {challenge.prize}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="mt-4 pt-4 border-t border-gray-200">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-4">
-                        <div>
-                          <p className="text-sm text-gray-600">Submissions</p>
-                          <p className="font-medium">{challenge.submissions}</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-600">Progress</p>
-                          <div className="w-32 h-2 bg-gray-200 rounded-full mt-1">
-                            <div 
-                              className="h-full bg-primary rounded-full"
-                              style={{ width: `${challenge.progress}%` }}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                      <Button variant="ghost" className="text-primary">
-                        View Details
-                        <ChevronRight className="ml-2 h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </motion.div>
+                <ChallengeCard key={challenge.id} challenge={challenge} index={index} />
               ))}
             </div>
 
@@ -576,82 +625,7 @@ const Dashboard = () => {
               <div className="space-y-4">
                 <AnimatePresence>
                   {displayedChallenges.map((challenge, index) => (
-                    <motion.div
-                      key={challenge.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -20 }}
-                      transition={{ delay: index * 0.1 }}
-                      className="group bg-gray-50 rounded-xl p-4 lg:p-6 hover:bg-gray-100 transition-all cursor-pointer"
-                    >
-                      <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between space-y-4 lg:space-y-0">
-                        <div className="flex items-start space-x-4">
-                          <div className="p-3 bg-primary/10 rounded-xl">
-                            <Trophy className="h-5 w-5 text-primary" />
-                          </div>
-                          <div>
-                            <h3 className="font-medium text-lg mb-1 group-hover:text-primary transition-colors">
-                              {challenge.title}
-                            </h3>
-                            <p className="text-gray-600 text-sm mb-3">
-                              {challenge.description}
-                            </p>
-                            <div className="flex items-center space-x-4 text-sm">
-                              <div className="flex items-center text-gray-500">
-                                <Building2 className="h-4 w-4 mr-1 flex-shrink-0" />
-                                <span className="truncate">{challenge.organization}</span>
-                              </div>
-                              <div className="flex items-center text-gray-500">
-                                <Users className="h-4 w-4 mr-1 flex-shrink-0" />
-                                <span>{challenge.participants} participants</span>
-                              </div>
-                              <div className="flex items-center text-gray-500">
-                                <Clock className="h-4 w-4 mr-1 flex-shrink-0" />
-                                <span>{challenge.daysLeft} days left</span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex flex-row lg:flex-col items-center lg:items-end justify-between lg:justify-start space-y-0 lg:space-y-2">
-                          <Badge 
-                            variant="secondary"
-                            className={`${
-                              challenge.status === 'Active' 
-                                ? 'bg-green-100 text-green-700' 
-                                : 'bg-blue-100 text-blue-700'
-                            } rounded-lg px-3 py-1`}
-                          >
-                            {challenge.status}
-                          </Badge>
-                          <p className="text-primary font-semibold">
-                            {challenge.prize}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="mt-4 pt-4 border-t border-gray-200">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-4">
-                            <div>
-                              <p className="text-sm text-gray-600">Submissions</p>
-                              <p className="font-medium">{challenge.submissions}</p>
-                            </div>
-                            <div>
-                              <p className="text-sm text-gray-600">Progress</p>
-                              <div className="w-32 h-2 bg-gray-200 rounded-full mt-1">
-                                <div 
-                                  className="h-full bg-primary rounded-full"
-                                  style={{ width: `${challenge.progress}%` }}
-                                />
-                              </div>
-                            </div>
-                          </div>
-                          <Button variant="ghost" className="text-primary">
-                            View Details
-                            <ChevronRight className="ml-2 h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    </motion.div>
+                    <ChallengeCard key={challenge.id} challenge={challenge} index={index} />
                   ))}
                 </AnimatePresence>
               </div>
@@ -852,82 +826,7 @@ const Dashboard = () => {
             <div className="space-y-4">
               <AnimatePresence>
                 {displayedChallenges.map((challenge, index) => (
-                  <motion.div
-                    key={challenge.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    transition={{ delay: index * 0.1 }}
-                    className="group bg-gray-50 rounded-xl p-4 lg:p-6 hover:bg-gray-100 transition-all cursor-pointer"
-                  >
-                    <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between space-y-4 lg:space-y-0">
-                      <div className="flex items-start space-x-4">
-                        <div className="p-3 bg-primary/10 rounded-xl">
-                          <Trophy className="h-5 w-5 text-primary" />
-                        </div>
-                        <div>
-                          <h3 className="font-medium text-lg mb-1 group-hover:text-primary transition-colors">
-                            {challenge.title}
-                          </h3>
-                          <p className="text-gray-600 text-sm mb-3">
-                            {challenge.description}
-                          </p>
-                          <div className="flex items-center space-x-4 text-sm">
-                            <div className="flex items-center text-gray-500">
-                              <Building2 className="h-4 w-4 mr-1 flex-shrink-0" />
-                              <span className="truncate">{challenge.organization}</span>
-                            </div>
-                            <div className="flex items-center text-gray-500">
-                              <Users className="h-4 w-4 mr-1 flex-shrink-0" />
-                              <span>{challenge.participants} participants</span>
-                            </div>
-                            <div className="flex items-center text-gray-500">
-                              <Clock className="h-4 w-4 mr-1 flex-shrink-0" />
-                              <span>{challenge.daysLeft} days left</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex flex-row lg:flex-col items-center lg:items-end justify-between lg:justify-start space-y-0 lg:space-y-2">
-                        <Badge 
-                          variant="secondary"
-                          className={`${
-                            challenge.status === 'Active' 
-                              ? 'bg-green-100 text-green-700' 
-                              : 'bg-blue-100 text-blue-700'
-                          } rounded-lg px-3 py-1`}
-                        >
-                          {challenge.status}
-                        </Badge>
-                        <p className="text-primary font-semibold">
-                          {challenge.prize}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="mt-4 pt-4 border-t border-gray-200">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-4">
-                          <div>
-                            <p className="text-sm text-gray-600">Submissions</p>
-                            <p className="font-medium">{challenge.submissions}</p>
-                          </div>
-                          <div>
-                            <p className="text-sm text-gray-600">Progress</p>
-                            <div className="w-32 h-2 bg-gray-200 rounded-full mt-1">
-                              <div 
-                                className="h-full bg-primary rounded-full"
-                                style={{ width: `${challenge.progress}%` }}
-                              />
-                            </div>
-                          </div>
-                        </div>
-                        <Button variant="ghost" className="text-primary">
-                          View Details
-                          <ChevronRight className="ml-2 h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </motion.div>
+                  <ChallengeCard key={challenge.id} challenge={challenge} index={index} />
                 ))}
               </AnimatePresence>
             </div>
