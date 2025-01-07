@@ -12,9 +12,9 @@ export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) 
     return <div>Loading...</div>;
   }
 
-  if (!user) {
-    return <Navigate to="/signin" />;
-  }
+  // if (!user) {
+  //   return <Navigate to="/signin" />;
+  // }
 
   if (allowedRoles && user.role && !allowedRoles.includes(user.role as 'partner' | 'participant')) {
     return <Navigate to={user.role === 'partner' ? '/partner-dashboard' : '/dashboard'} />;

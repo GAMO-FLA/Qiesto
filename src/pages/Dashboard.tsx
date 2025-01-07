@@ -18,25 +18,30 @@ import { User } from '@/types/user';
 import { useAuth } from '@/contexts/AuthContext'
 
 const Dashboard = () => {
-  const { user, loading } = useAuth() as { user: User | null, loading: boolean };
+  //const { user, loading } = useAuth() as { user: User | null, loading: boolean };
   const navigate = useNavigate();
   const [activeView, setActiveView] = useState('overview');
   const [showAllChallenges, setShowAllChallenges] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('all');
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
+  // if (loading) {
+  //   return <div>Loading...</div>;
+  // }
 
-  if (!user) {
-    return <Navigate to="/signin" />
-  } else if (user.role === 'partner') {
-    console.log('User is a partner');
-  } else if (user.role === 'participant') {
-    console.log('User is a participant');
-  } else {
-    console.error('Invalid user role');
+  // if (!user) {
+  //   return <Navigate to="/signin" />
+  // } else if (user.role === 'partner') {
+  //   console.log('User is a partner');
+  // } else if (user.role === 'participant') {
+  //   console.log('User is a participant');
+  // } else {
+  //   console.error('Invalid user role');
+  // }
+
+  const user = {
+    fullName: 'John Doe',
+    email: 'johnDoe@gmail.com'
   }
 
   const MENU_ITEMS = [

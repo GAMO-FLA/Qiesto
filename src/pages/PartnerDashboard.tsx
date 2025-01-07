@@ -29,7 +29,18 @@ const PartnerDashboard = () => {
   const [selectedFilter, setSelectedFilter] = useState('all');
   const [showNewChallengeModal, setShowNewChallengeModal] = useState(false);
   const navigate = useNavigate();
-  const [user, setUser] = useState<User | null>(null);
+  //const [user, setUser] = useState<User | null>(null);
+  const user: User = {
+    id: '1',
+    fullName: 'John Doe',
+    email: 'partner-approved@qiesta.com',
+    userType: 'partner',
+    app_metadata: {},
+    user_metadata: {},
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    aud: 'authenticated'
+  }
 
   // New challenge form state
   const [newChallenge, setNewChallenge] = useState({
@@ -55,20 +66,20 @@ const PartnerDashboard = () => {
     status: 'pending'
   });
 
-  useEffect(() => {
-    const loadUser = async () => {
-      const currentUser = await getCurrentUser();
-      if (!currentUser) {
-        navigate('/signin');
-      } else if (currentUser.role !== 'partner') {
-        navigate('/dashboard');
-      } else if (currentUser.status === 'pending') {
-        navigate('/partner-pending');
-      }
-      setUser(currentUser);
-    };
-    loadUser();
-  }, [navigate]);
+  // useEffect(() => {
+  //   const loadUser = async () => {
+  //     const currentUser = await getCurrentUser();
+  //     if (!currentUser) {
+  //       navigate('/signin');
+  //     } else if (currentUser.role !== 'partner') {
+  //       navigate('/dashboard');
+  //     } else if (currentUser.status === 'pending') {
+  //       navigate('/partner-pending');
+  //     }
+  //     setUser(currentUser);
+  //   };
+  //   loadUser();
+  // }, [navigate]);
 
   const handleSignOut = async () => {
     try {

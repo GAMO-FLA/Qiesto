@@ -6,6 +6,8 @@ import { set } from 'date-fns'
 export interface AuthUser extends User {
   userType?: 'partner' | 'participant'
   status?: 'pending' | 'approved'
+  fullName?: string
+  role?: 'partner' | 'participant'
 }
 
 interface AuthContextType {
@@ -17,7 +19,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<AuthUser | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const subscription = supabase.auth.onAuthStateChange(async (event, session) => {

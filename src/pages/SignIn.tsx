@@ -6,12 +6,14 @@ import { Link, useNavigate } from 'react-router-dom';
 import { signIn, signOut } from '@/services/auth';
 import { toast } from 'sonner';
 import { Sparkles, Mail, Lock, ArrowRight } from 'lucide-react';
+import { set } from 'date-fns';
 
 const SignIn = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,6 +32,7 @@ const SignIn = () => {
         navigate('/dashboard');
       }
     } catch (error) {
+      setError('Invalid email or password'); 
       console.error('Sign in error:', error);
       toast.error('Invalid email or password');
     } finally {
@@ -125,6 +128,14 @@ const SignIn = () => {
               </Link>
             </div>
 
+            <p className="text-left text-sm text-gray-600" style={{margin: '20px', color: 'red'}}>
+              {error && (
+                <span className="text-red-500 text-sm">
+                  {error}
+                </span>
+              )}
+            </p>
+
             <Button
               type="submit"
               className="w-full bg-primary text-white hover:bg-primary/90 transition-colors rounded-xl h-11"
@@ -153,6 +164,29 @@ const SignIn = () => {
               </Link>
             </p>
           </form>
+          <p className="text-left text-sm text-gray-600" style={{marginTop: '20px'}}>
+          <b>Test credentials:</b>
+          <br />
+          Participant: 
+          <br />
+          email: participant@qiesta.com
+          <br />
+          password: Asdfgh12345!
+          <br />
+          <br />
+          Partner (Pending):
+          <br />
+          email: partner-pending@qiesta.com
+          <br />
+          password: Asdfgh12345!
+          <br />
+          <br />
+          Partner (Approved):
+          <br />
+          email: partner-approved@qiesta.com
+          <br />
+          password: Asdfgh12345!
+          </p>
         </motion.div>
       </div>
 

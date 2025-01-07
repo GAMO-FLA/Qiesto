@@ -27,8 +27,12 @@ const SignUp = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const [error, setError] = useState<string | null>(null);
 
   const validateForm = () => {
+    if (!formData.email || !formData.password || !formData.fullName) {
+      throw new Error('All fields are required');
+    }
     if (formData.password !== formData.confirmPassword) {
       toast.error('Passwords do not match');
       return false;
@@ -37,20 +41,29 @@ const SignUp = () => {
       toast.error('Password must be at least 8 characters long');
       return false;
     }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      throw new Error('Please enter a valid email address');
+    }
+    if (formData.userType === 'partner') {
+      if (!formData.organization || !formData.position) {
+        throw new Error('Organization and position are required for partners');
+      }
+    }
     return true;
   };
 
     const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validateForm()) return;
       
     setIsLoading(true);
     try {
+      validateForm();
       if (formData.userType === 'partner') {
         await signUp({
-          email: formData.email,
+          email: formData.email.trim(),
           password: formData.password,
-          fullName: formData.fullName,
+          fullName: formData.fullName.trim(),
           userType: 'partner',
           organization: formData.organization,
           position: formData.position,
@@ -60,9 +73,9 @@ const SignUp = () => {
         navigate('/partner-pending');
       } else {
         await signUp({
-          email: formData.email,
+          email: formData.email.trim(),
           password: formData.password,
-          fullName: formData.fullName,
+          fullName: formData.fullName.trim(),
           userType: 'participant',
           status: 'approved' // Participants are auto-approved
         });
@@ -70,8 +83,15 @@ const SignUp = () => {
         navigate('/signin');
       }
     } catch (error) {
+      setError(error.message);
       const err = error as Error;
-      toast.error(err.message || 'Failed to create account. Please try again.');
+      console.error('Signup error:', err); // Add logging
+      // More specific error messages
+      if (err.message?.includes('Email')) {
+        toast.error('This email is already registered');
+      } else {
+        toast.error(err.message || 'Failed to create account. Please try again.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -337,6 +357,14 @@ const SignUp = () => {
               </div>
             </div>
 
+            <p className="text-left text-sm text-gray-600" style={{margin: '20px', color: 'red'}}>
+              {error && (
+                <span className="text-red-500 text-sm">
+                  {error}
+                </span>
+              )}
+            </p>
+
             <Button
               type="submit"
               className="w-full bg-primary text-white hover:bg-primary/90 transition-colors rounded-xl h-11"
@@ -365,6 +393,29 @@ const SignUp = () => {
               </Link>
             </p>
           </form>
+          <p className="text-left text-sm text-gray-600" style={{marginTop: '20px'}}>
+          <b>Test credentials:</b>
+          <br />
+          Participant: 
+          <br />
+          email: participant@qiesta.com
+          <br />
+          password: Asdfgh12345!
+          <br />
+          <br />
+          Partner (Pending):
+          <br />
+          email: partner-pending@qiesta.com
+          <br />
+          password: Asdfgh12345!
+          <br />
+          <br />
+          Partner (Approved):
+          <br />
+          email: partner-approved@qiesta.com
+          <br />
+          password: Asdfgh12345!
+          </p>
         </motion.div>
       </div>
 
