@@ -571,35 +571,40 @@ const Dashboard = () => {
 
       default:
         return (
-          <>
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8 space-y-4 lg:space-y-0">
-              <div className="flex-1 lg:flex lg:items-center lg:justify-between">
-                  <div className="lg:flex lg:items-center lg:space-x-6">
-                    <motion.div
-                      initial={{ opacity: 0, y: -20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                    >
-                      <h1 className="text-2xl lg:text-3xl font-bold mb-2">
-                        Welcome back, {user?.fullName || 'Admin'}
-                      </h1>
-                      <p className="text-gray-600">
-                        Here's what's happening with your challenges
-                      </p>
-                    </motion.div>
-                  </div>
-                  <div className="flex items-center space-x-4 w-full relative">
-                    <NotificationsDropdown />
-                    <Link to="/challenges" className="hover:no-underline">
-                      <Button className="bg-primary text-white rounded-xl hover:bg-primary/90 transition-colors"
-                      variant="default" >
-                        <Plus className="mr-2 h-5 w-5" />
-                        <span className="hidden sm:inline">Browse Challenges</span>
-                        <span className="sm:hidden">Browse</span>
-                      </Button>
-                    </Link>
-                  </div> 
+          <>          
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8 space-y-6 lg:space-y-0 p-2 lg:p-1">
+            <div className="flex-1 lg:flex lg:items-center lg:justify-between gap-8">
+              <div className="lg:flex lg:items-center lg:space-x-8 mb-6 lg:mb-0" >
+                <motion.div
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, ease: "easeOut" }}
+                  className="space-y-3 p-2 lg:p-4"
+                >
+                  <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight">
+                    Welcome back, {user?.fullName || 'Admin'}
+                  </h1>
+                  <p className="text-gray-600 text-sm md:text-base lg:text-lg">
+                    Here's what's happening with your challenges
+                  </p>
+                </motion.div>
+              </div>
+              
+              <div className="flex items-center space-x-4 w-full lg:w-auto">
+                <NotificationsDropdown />
+                <Link to="/challenges" className="hover:no-underline">
+                  <Button 
+                    className="bg-primary text-white rounded-xl hover:bg-primary/90 transition-colors"
+                    variant="default"
+                  >
+                    <Plus className="mr-2 h-5 w-5" />
+                    <span className="hidden sm:inline">Browse Challenges</span>
+                    <span className="sm:hidden">Browse</span>
+                  </Button>
+                </Link>
               </div>
             </div>
+          </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8">
               {stats.map((stat, index) => (
@@ -781,75 +786,16 @@ const Dashboard = () => {
           </div>
         </div>
       </aside>
-
-      <main className={cn(
-        "transition-all duration-200 ease-in-out",
-        "lg:ml-72 p-4 lg:p-8",
-        "pt-24"
-      )}>
-        <div className="max-w-7xl mx-auto">
-          <div className="grid gap-2">
-          ` <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8 space-y-4 lg:space-y-0 w-full">
-              <div className="lg:flex lg:items-center lg:space-x-6 lg:flex-1">
-                <motion.div
-                  initial={{ opacity: 0, y: -20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                >
-                  <h1 className="text-2xl lg:text-3xl font-bold mb-2">
-                    Welcome back, {user?.fullName || 'Admin'}
-                  </h1>
-                  <p className="text-gray-600">
-                    Here's what's happening with your challenges
-                  </p>
-                </motion.div>
-              </div>
-              <div className="flex items-center space-x-4 lg:flex-shrink-0"> {/* Removed w-full */}
-                <NotificationsDropdown />
-                <Link to="/challenges" className="hover:no-underline">
-                  <Button 
-                    className="bg-primary text-white rounded-xl hover:bg-primary/90 transition-colors"
-                    variant="default"
-                  >
-                    <Plus className="mr-2 h-5 w-5" />
-                    <span className="hidden sm:inline">Browse Challenges</span>
-                    <span className="sm:hidden">Browse</span>
-                  </Button>
-                </Link>
-              </div> 
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-              {stats.map((stat, index) => (
-                <StatsCard key={stat.label} stat={stat} index={index} />
-              ))}
-            </div>
-
-            <div className="bg-white rounded-xl shadow-sm">
-              <div className="p-6 border-b border-gray-100">
-                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
-                  <h2 className="text-xl font-semibold">Your Challenges</h2>
-                  <SearchAndFilter
-                    searchQuery={searchQuery}
-                    setSearchQuery={setSearchQuery}
-                    selectedFilter={selectedFilter}
-                    setSelectedFilter={setSelectedFilter}
-                  />
-                </div>
-              </div>
-
-              <div className="p-6">
-                <div className="space-y-4">
-                  <AnimatePresence>
-                    {displayedChallenges.map((challenge, index) => (
-                      <ChallengeCard key={challenge.id} challenge={challenge} index={index} />
-                    ))}
-                  </AnimatePresence>
-                </div>
-              </div>
-            </div>
+        {/* Update the main content */}
+        <main className={cn(
+          "transition-all duration-200 ease-in-out",
+          "lg:ml-72 px-4 sm:px-6 lg:px-8",
+          "pt-16 sm:pt-20 pb-12" // Reduced from pt-20 sm:pt-24
+        )}>
+          <div className="max-w-7xl mx-auto space-y-4"> {/* Reduced from space-y-6 */}
+            {renderMainContent()}
           </div>
-        </div>
-      </main>
+        </main>
     </div>
   );
 };
