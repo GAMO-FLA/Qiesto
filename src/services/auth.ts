@@ -25,6 +25,7 @@ export const signIn = async ({ email, password }: SignInCredentials) => {
   try {
     let authResponse;
     try {
+       console.log('Starting sign in...');
       authResponse = await supabase.auth.signInWithPassword({
         email,
         password
@@ -32,6 +33,7 @@ export const signIn = async ({ email, password }: SignInCredentials) => {
         console.error('Raw auth error:', err);
         throw err;
       });
+      console.log('Sign in response:', authResponse);
       
     } catch (authCallError) {
       console.error('Auth call failed:', authCallError);
@@ -93,11 +95,16 @@ export const signUp = async ({ email, password, fullName, userType, organization
 }
 
 export const signOut = async () => {
-  console.log('Signing out...');
-  const { error } = await supabase.auth.signOut()
-  console.log('Signed out');
-  if (error) throw error
-}
+  try {
+      console.log('Signing out...');
+      const { error } = await supabase.auth.signOut();
+      console.log('Sign out request sent');
+      if (error) throw error;
+      console.log('Signed out successfully');
+  } catch (err) {
+      console.error('Error during sign out:', err);
+  }
+};
 
 export const getCurrentUser = async (): Promise<User | null> => {
   const { data: { user } } = await supabase.auth.getUser()
