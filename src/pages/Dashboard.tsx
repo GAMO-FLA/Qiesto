@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { getCurrentUser, signOut } from '@/services/auth';
+import { signOut, getCurrentUser } from '@/services/auth';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { 
@@ -15,9 +15,10 @@ import { Switch } from "@/components/ui/switch";
 import NewChallengeModal from '@/components/dashboard/NewChallengeModal';
 import NotificationsDropdown from '@/components/dashboard/NotificationsDropdown';
 import { User } from '@/types/user';
-import { useAuth } from '@/contexts/AuthContext'
+import { useAuth } from '@/lib/auth';
 import { cn } from "@/lib/utils";
 import { useMediaQuery } from '@/hooks/useMediaQuery';
+import { supabase } from '@/lib/supabase';
 
 const ChallengeCard = ({ challenge, index }) => {
   const isLargeScreen = useMediaQuery('(min-width: 1024px)');
@@ -141,7 +142,7 @@ const useChallenges = (allChallenges, searchQuery, selectedFilter) => {
 };
 
 const Dashboard = () => {
-  //const { user, loading } = useAuth() as { user: User | null, loading: boolean };
+  const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [activeView, setActiveView] = useState('overview');
   const [showAllChallenges, setShowAllChallenges] = useState(false);
@@ -149,6 +150,31 @@ const Dashboard = () => {
   const [selectedFilter, setSelectedFilter] = useState('all');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+
+  const allChallenges = [
+    {
+      id: '1',
+      title: "Rwanda Tech Innovation Challenge",
+      description: "Develop solutions for digital transformation in Rwanda",
+      organization: "Rwanda ICT Chamber",
+      participants: 450,
+      status: "Active",
+      submissions: 125,
+      progress: 65,
+      daysLeft: 14,
+      prize: "$50,000",
+      deadline: "2024-05-15"
+    },
+    // ... more challenges
+  ];
+
+  const handleMobileMenuToggle = useCallback(() => {
+    setIsMobileMenuOpen(prev => !prev);
+    document.body.style.overflow = isMobileMenuOpen ? 'auto' : 'hidden';
+  }, [isMobileMenuOpen]);
+
+  const filteredChallenges = useChallenges(allChallenges, searchQuery, selectedFilter);
+  const displayedChallenges = showAllChallenges ? filteredChallenges : filteredChallenges.slice(0, 3);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -159,23 +185,18 @@ const Dashboard = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // if (loading) {
-  //   return <div>Loading...</div>;
-  // }
+  useEffect(() => {
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
+  }, []);
 
-  // if (!user) {
-  //   return <Navigate to="/signin" />
-  // } else if (user.role === 'partner') {
-  //   console.log('User is a partner');
-  // } else if (user.role === 'participant') {
-  //   console.log('User is a participant');
-  // } else {
-  //   console.error('Invalid user role');
-  // }
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
-  const user = {
-    fullName: 'Moise Gasana',
-    email: 'gamoflamb@gmail.com'
+  if (!user) {
+    return <Navigate to="/signin" />;
   }
 
   const MENU_ITEMS = [
@@ -247,24 +268,6 @@ const Dashboard = () => {
     }
   ];
 
-  // Challenge data
-  const allChallenges = [
-    {
-      id: '1',
-      title: "Rwanda Tech Innovation Challenge",
-      description: "Develop solutions for digital transformation in Rwanda",
-      organization: "Rwanda ICT Chamber",
-      participants: 450,
-      status: "Active",
-      submissions: 125,
-      progress: 65,
-      daysLeft: 14,
-      prize: "$50,000",
-      deadline: "2024-05-15"
-    },
-    // ... more challenges
-  ];
-
   const teams = [
     {
       id: '1',
@@ -289,30 +292,14 @@ const Dashboard = () => {
     }
   ];
 
-  const filteredChallenges = useChallenges(allChallenges, searchQuery, selectedFilter);
-  const displayedChallenges = showAllChallenges ? filteredChallenges : filteredChallenges.slice(0, 3);
-
   const handleSignOut = async () => {
     try {
-      // await signOut();
-      navigate('/signin');
+      await supabase.auth.signOut()
+      navigate('/signin')
     } catch (error) {
-      toast.error('Error signing out');
+      toast.error('Error signing out')
     }
-  };
-
-  const handleMobileMenuToggle = useCallback(() => {
-    setIsMobileMenuOpen(prev => !prev);
-    // Prevent body scroll when menu is open
-    document.body.style.overflow = isMobileMenuOpen ? 'auto' : 'hidden';
-  }, [isMobileMenuOpen]);
-
-  // Clean up effect
-  useEffect(() => {
-    return () => {
-      document.body.style.overflow = 'auto';
-    };
-  }, []);
+  }
 
   const StatsCard = ({ stat, index }) => (
     <motion.div

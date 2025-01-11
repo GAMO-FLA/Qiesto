@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase'
-import { User } from '@/types/user'
+import { AuthUser } from '@/lib/auth'
 
 export type SignInCredentials = {
   email: string
@@ -23,7 +23,7 @@ export type UserData = {
 
 export const signIn = async ({ email, password }: SignInCredentials) => {
   try {
-
+    // Handle test accounts first
     if (email === 'participant@qiesta.com' && password === 'Asdfgh12345!') {
       console.log('Skipping sign in for default participant');
       return {
@@ -48,8 +48,7 @@ export const signIn = async ({ email, password }: SignInCredentials) => {
           createdAt: new Date().toISOString()
         }
       };
-    }
-    else if (email === 'partner-pending@qiesta.com' && password === 'Asdfgh12345!') {
+    } else if (email === 'partner-pending@qiesta.com' && password === 'Asdfgh12345!') {
       console.log('Skipping sign in for default partner');
       return {
         user: {
@@ -62,56 +61,33 @@ export const signIn = async ({ email, password }: SignInCredentials) => {
         }
       };
     }
-    else {
-      throw new Error('Wrong credentials');
-    }
 
-    console.log('1. Starting sign in...');
-    let authResponse;
-    try {
-      authResponse = await supabase.auth.signInWithPassword({
-        email,
-        password
-      }).catch(err => {
-        console.error('Raw auth error:', err);
-        throw err;
-      });
-      
-      // Log raw response immediately
-      console.log('1.5 Auth promise resolved:', JSON.stringify(authResponse));
-    } catch (authCallError) {
-      console.error('Auth call failed:', authCallError);
-      throw authCallError;
-    }
-    console.log('2. Raw auth response:', authResponse);
-
-    const { data: authData, error: authError } = authResponse;
-    console.log('3. Destructured auth:', { authData, authError });
+    console.log('Starting sign in...');
+    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+      email,
+      password
+    });
 
     if (authError) throw authError;
     if (!authData.user) throw new Error('No user returned');
 
-    console.log('4. Valid user found:', authData.user.id);
-    const profileResponse = await supabase
+    // Get user profile
+    const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('user_type, status')
+      .select('user_type, status, full_name')
       .eq('id', authData.user.id)
       .single();
     
-    console.log('5. Profile response:', profileResponse);
-
-    const { data: profile, error: profileError } = profileResponse;
     if (profileError) throw profileError;
 
-    const result = {
+    return {
       user: {
         ...authData.user,
+        fullName: profile?.full_name,
         role: profile?.user_type || 'participant',
         status: profile?.status || 'pending'
       }
     };
-    console.log('6. Final result:', result);
-    return result;
 
   } catch (error) {
     console.error('SignIn error:', error);
@@ -160,26 +136,54 @@ export const signUp = async ({ email, password, fullName, userType, organization
       };
     }
     else {
-      throw new Error('Wrong credentials');
-    }
-    console.log('Starting sign up...');
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
+      console.log('Starting sign up...');
+      
+      // First create the user
+      const { data: authData, error: signUpError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: fullName,
+            user_type: userType
+          }
+        }
+      });
+
+      if (signUpError) throw signUpError;
+      if (!authData.user) throw new Error('No user returned from signup');
+
+      // Then create the profile
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert({
+          id: authData.user.id,
+          email: email,
           full_name: fullName,
           user_type: userType,
-          // Only include if present
-          ...(organization && { organization: organization }),
-          ...(position && { position: position })
-        }
-      }
-    })
-    console.log('Sign up result:', { data, error });
+          organization: organization || null,
+          position: position || null,
+          status: userType === 'partner' ? 'pending' : 'approved'
+        })
+        .select()
+        .single();
 
-    if (error) throw error
-    return data
+      if (profileError) {
+        console.error('Profile creation error:', profileError);
+        // If profile creation fails, we should clean up the auth user
+        await supabase.auth.admin.deleteUser(authData.user.id);
+        throw new Error('Failed to create user profile');
+      }
+
+      return {
+        user: {
+          ...authData.user,
+          fullName,
+          role: userType,
+          status: userType === 'partner' ? 'pending' : 'approved'
+        }
+      };
+    }
   } catch (error) {
     console.error('Auth error:', error);
     throw error;
@@ -191,7 +195,7 @@ export const signOut = async () => {
   if (error) throw error
 }
 
-export const getCurrentUser = async (): Promise<User | null> => {
+export const getCurrentUser = async (): Promise<AuthUser | null> => {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
   
@@ -207,7 +211,7 @@ export const getCurrentUser = async (): Promise<User | null> => {
       role: profile?.role || 'participant',
       status: profile?.status || 'pending',
       createdAt: user.created_at
-    } as User
+    } as AuthUser
 }
 
 export const isAuthenticated = async (): Promise<boolean> => {

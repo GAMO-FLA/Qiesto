@@ -10,11 +10,11 @@ import Dashboard from './pages/Dashboard';
 import PartnerPending from './pages/PartnerPending';
 import PartnerDashboard from './pages/PartnerDashboard';
 import { ProtectedRoute } from './components/ProtectedRoute';
-import { AuthProvider } from './contexts/AuthContext';
+import { AuthProvider } from '@/components/providers/AuthProvider';
 
 function App() {
   return (
-    // <AuthProvider>
+    <AuthProvider>
       <Router>
         <Routes>
           <Route path="/" element={<Index />} />
@@ -29,30 +29,30 @@ function App() {
           <Route
             path="/dashboard"
             element={
-              //<ProtectedRoute allowedRoles={['participant']}>
+              <ProtectedRoute allowedRoles={['participant']}>
                 <Dashboard />
-              //</ProtectedRoute>
+              </ProtectedRoute>
             }
           />
           <Route
             path="/partner-dashboard"
             element={
-              //<ProtectedRoute allowedRoles={['partner']}>
+              <ProtectedRoute allowedRoles={['partner']}>
                 <PartnerDashboard />
-              //</ProtectedRoute>
+              </ProtectedRoute>
             }
           />
           <Route 
             path="/partner-pending" 
             element={
-              //<ProtectedRoute allowedRoles={['partner']}>
+              <ProtectedRoute allowedRoles={['partner']}>
                 <PartnerPending />
-              //</ProtectedRoute>
+              </ProtectedRoute>
             }
           />
         </Routes>
       </Router>
-    // </AuthProvider>
+    </AuthProvider>
   );
 }
 

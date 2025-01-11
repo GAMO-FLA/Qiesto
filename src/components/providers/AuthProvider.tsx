@@ -2,11 +2,31 @@ import React, { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { AuthContext, AuthUser } from '@/lib/auth'
 
-export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null)
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        supabase
+          .from('profiles')
+          .select('user_type, status')
+          .eq('id', session.user.id)
+          .single()
+          .then(({ data: profile, error }) => {
+            if (!error && profile) {
+              setUser({
+                ...session.user,
+                role: profile.user_type || 'participant',
+                status: profile.status || 'pending'
+              })
+            }
+          })
+      }
+      setLoading(false)
+    })
+
     const subscription = supabase.auth.onAuthStateChange(async (event, session) => {
       try {
         if (session?.user) {
@@ -31,9 +51,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setLoading(false)
     })
 
-    return () => {
-      subscription.data.subscription.unsubscribe()
-    }
+    return () => subscription.data.subscription.unsubscribe()
   }, [])
 
   return (
@@ -41,4 +59,4 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       {children}
     </AuthContext.Provider>
   )
-}
+} 
