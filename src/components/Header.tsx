@@ -52,37 +52,57 @@ export const Header = () => {
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
-      className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-500 ${
-        scrolled 
-          ? 'bg-white/80 backdrop-blur-xl shadow-lg shadow-black/[0.03]' 
-          : 'bg-transparent backdrop-blur-sm'
-      }`}
+      className="fixed top-0 left-0 right-0 z-[100]"
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
+      <div 
+        className={`absolute inset-0 transition-all duration-300 ${
+          scrolled 
+            ? 'bg-white/80 backdrop-blur-xl shadow-lg shadow-gray-200/20' 
+            : 'bg-white/70 backdrop-blur-lg'
+        }`}
+      />
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16">
           <div className="flex items-center space-x-12">
-            <Link to="/" className="flex items-center space-x-2">
-              <div className="p-2 bg-primary/10 rounded-xl">
-                <Sparkles className="h-6 w-6 text-primary" />
-              </div>
-              <span className="text-xl font-bold">Qiesto</span>
+            <Link 
+              to="/"
+              className="flex items-center space-x-3 group"
+            >
+              <motion.div
+                initial={{ opacity: 1, scale: 1, rotate: 0 }}
+                animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                className="w-10 h-10 bg-gradient-to-br from-primary via-primary/90 to-blue-500 rounded-xl flex items-center justify-center shadow-lg shadow-primary/25 group-hover:shadow-primary/40 transition-all duration-300 group-hover:scale-105"
+              >
+                <Sparkles className="h-5 w-5 text-white transform group-hover:rotate-12 transition-transform" />
+              </motion.div>
+              <motion.span 
+                initial={{ opacity: 1, x: 0 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="font-bold text-xl bg-gradient-to-r from-gray-900 via-gray-800 to-gray-600 bg-clip-text text-transparent"
+              >
+                Qiesto
+              </motion.span>
             </Link>
 
             {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center space-x-1">
+            <nav className="hidden md:flex items-center space-x-2">
               {navItems.map((item) => (
-                <Link key={item.label} to={item.path}>
-                  <motion.div
+                <Link 
+                  key={item.label} 
+                  to={item.path}
+                  className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+                    location.pathname === item.path
+                      ? 'text-primary bg-primary/5 shadow-sm'
+                      : 'text-gray-600 hover:text-primary hover:bg-gray-50'
+                  }`}
+                >
+                  <motion.span
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    className={`px-4 py-2 rounded-xl transition-all duration-200 ${
-                      location.pathname === item.path
-                        ? 'text-primary bg-primary/5 font-medium'
-                        : 'text-gray-600 hover:text-primary hover:bg-gray-50'
-                    }`}
                   >
                     {item.label}
-                  </motion.div>
+                  </motion.span>
                 </Link>
               ))}
             </nav>
@@ -111,49 +131,54 @@ export const Header = () => {
                   </Button>
                 </motion.div>
 
-                <div className="relative">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button 
-                        variant="ghost" 
-                        className="relative rounded-full h-8 w-8 border border-gray-200"
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <motion.div whileHover={{ scale: 1.02 }}>
+                      <Button
+                        variant="ghost"
+                        className="rounded-xl hover:bg-primary/5 border border-gray-200/50 shadow-sm pl-2 pr-3"
                       >
-                        <User className="h-4 w-4" />
+                        <div className="flex items-center space-x-2">
+                          <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary/10 to-blue-500/10 flex items-center justify-center">
+                            <User className="h-4 w-4 text-primary" />
+                          </div>
+                          <ChevronDown className="h-4 w-4 text-gray-400 transition-transform duration-200 group-hover:rotate-180" />
+                        </div>
                       </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent 
-                      align="end" 
-                      className="w-56 z-[101] mt-2 bg-white rounded-xl shadow-lg border border-gray-100"
+                    </motion.div>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent 
+                    align="end" 
+                    className="w-56 p-2 bg-white/80 backdrop-blur-xl border border-gray-200/50"
+                  >
+                    <div className="px-2 py-1.5 border-b border-gray-100">
+                      <p className="text-sm font-medium">{user.fullName}</p>
+                      <p className="text-xs text-gray-500">{user.email}</p>
+                    </div>
+                    <DropdownMenuItem 
+                      onClick={() => navigate('/dashboard')}
+                      className="rounded-lg cursor-pointer"
                     >
-                      <div className="px-2 py-1.5 border-b border-gray-100">
-                        <p className="text-sm font-medium">{user.fullName}</p>
-                        <p className="text-xs text-gray-500">{user.email}</p>
-                      </div>
-                      <DropdownMenuItem 
-                        onClick={() => navigate('/dashboard')}
-                        className="cursor-pointer hover:bg-gray-50"
-                      >
-                        <LayoutDashboard className="mr-2 h-4 w-4" />
-                        Dashboard
-                      </DropdownMenuItem>
-                      <DropdownMenuItem 
-                        onClick={() => navigate('/dashboard?view=settings')}
-                        className="cursor-pointer hover:bg-gray-50"
-                      >
-                        <Settings className="mr-2 h-4 w-4" />
-                        Settings
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem 
-                        onClick={handleLogout}
-                        className="text-red-600 cursor-pointer hover:bg-red-50 hover:text-red-700"
-                      >
-                        <LogOut className="mr-2 h-4 w-4" />
-                        Sign out
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
+                      <LayoutDashboard className="mr-2 h-4 w-4" />
+                      Dashboard
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      onClick={() => navigate('/dashboard?view=settings')}
+                      className="rounded-lg cursor-pointer"
+                    >
+                      <Settings className="mr-2 h-4 w-4" />
+                      Settings
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem 
+                      onClick={handleLogout}
+                      className="text-red-600 rounded-lg cursor-pointer hover:bg-red-50 hover:text-red-700"
+                    >
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Sign out
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             ) : (
               <AnimatePresence>
@@ -163,15 +188,16 @@ export const Header = () => {
                   animate={{ opacity: 1, x: 0 }}
                 >
                   <Link to="/signin">
-                    <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                      <Button variant="ghost" className="rounded-xl">
-                        Sign In
-                      </Button>
-                    </motion.div>
+                    <Button 
+                      variant="ghost" 
+                      className="text-gray-600 hover:text-primary hover:bg-primary/5 rounded-xl px-5"
+                    >
+                      Sign In
+                    </Button>
                   </Link>
                   <Link to="/signup">
                     <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                      <Button className="rounded-xl">
+                      <Button className="bg-gradient-to-r from-primary via-primary/90 to-blue-500 text-white hover:opacity-90 shadow-md shadow-primary/25 hover:shadow-primary/40 transition-all rounded-xl px-6">
                         Get Started
                         <ArrowRight className="ml-2 h-4 w-4" />
                       </Button>
