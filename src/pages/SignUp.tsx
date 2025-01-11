@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { signUp } from '@/services/auth';
+import { signUp, SignUpCredentials } from '@/services/auth';
 
 const SignUp = () => {
   const [formData, setFormData] = useState({
@@ -80,43 +80,48 @@ const SignUp = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-      
     setIsLoading(true);
+    setError(null);
+
     try {
       validateForm();
-      if (formData.userType === 'partner') {
-        await signUp({
-          email: formData.email.trim(),
-          password: formData.password,
-          fullName: formData.fullName.trim(),
-          userType: 'partner',
-          organization: formData.organization,
-          position: formData.position,
-          status: 'pending' // status for partners
-        });
-        toast.success('Thank you for your interest! Our team will contact you soon.');
-        navigate('/partner-pending');
-      } else {
-        await signUp({
-          email: formData.email.trim(),
-          password: formData.password,
-          fullName: formData.fullName.trim(),
-          userType: 'participant',
-          status: 'approved' // Participants are auto-approved
-        });
-        toast.success('Account created successfully!');
-        navigate('/signin');
+
+      const credentials: SignUpCredentials = {
+        email: formData.email.trim(),
+        password: formData.password,
+        fullName: formData.fullName.trim(),
+        userType: formData.userType as 'participant' | 'partner',
+        organization: formData.organization?.trim(),
+        position: formData.position?.trim()
+      };
+
+      console.log('Starting signup process...');
+      const { user } = await signUp(credentials);
+      
+      if (!user) {
+        throw new Error('Sign up failed - no user returned');
       }
+
+      console.log('Signup successful, user:', user);
+      toast.success('Account created successfully!');
+
+      // Add delay before navigation
+      setTimeout(() => {
+        const destination = user.role === 'partner' ? '/partner-pending' : '/dashboard';
+        console.log('Navigating to:', destination);
+        navigate(destination);
+      }, 100);
+
     } catch (error) {
-      setError(error.message);
+      console.error('Sign up error:', error);
       const err = error as Error;
-      console.error('Signup error:', err); // Add logging
-      // More specific error messages
-      if (err.message?.includes('Email')) {
+      
+      if (err.message?.toLowerCase().includes('email')) {
         toast.error('This email is already registered');
       } else {
         toast.error(err.message || 'Failed to create account. Please try again.');
       }
+      setError(err.message);
     } finally {
       setIsLoading(false);
     }

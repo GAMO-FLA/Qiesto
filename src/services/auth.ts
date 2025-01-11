@@ -136,97 +136,75 @@ export const signIn = async ({ email, password }: SignInCredentials) => {
   }
 };
 
-export const signUp = async ({ email, password, fullName, userType, organization, position }: SignUpCredentials) => {
+export const signUp = async ({ 
+  email, 
+  password, 
+  fullName, 
+  userType, 
+  organization, 
+  position 
+}: SignUpCredentials) => {
   try {
-    if (email === 'participant@qiesta.com' && password === 'Asdfgh12345!') {
-      console.log('Skipping sign up for default participant');
-      return {
-        user: {
-          id: '12345',
-          email: email,
-          fullName: fullName,
-          role: userType,
-          status: 'approved',
-          createdAt: new Date().toISOString()
-        }
-      };
-    } else if (email === 'partner-approved@qiesta.com' && password === 'Asdfgh12345!') {
-      console.log('Skipping sign up for default partner');
-      return {
-        user: {
-          id: '12346',
-          email: email,
-          fullName: fullName,
-          role: userType,
-          status: 'approved',
-          createdAt: new Date().toISOString()
-        }
-      };
-    }
-    else if (email === 'partner-pending@qiesta.com' && password === 'Asdfgh12345!') {
-      console.log('Skipping sign up for default partner');
-      return {
-        user: {
-          id: '12347',
-          email: email,
-          fullName: fullName,
-          role: userType,
-          status: 'pending',
-          createdAt: new Date().toISOString()
-        }
-      };
-    }
-    else {
-      console.log('Starting sign up...');
-      
-      // First create the user
-      const { data: authData, error: signUpError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            full_name: fullName,
-            user_type: userType
-          }
-        }
-      });
-
-      if (signUpError) throw signUpError;
-      if (!authData.user) throw new Error('No user returned from signup');
-
-      // Then create the profile
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .insert({
-          id: authData.user.id,
-          email: email,
+    // 1. Create auth user
+    const { data: authData, error: signUpError } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
           full_name: fullName,
-          user_type: userType,
-          organization: organization || null,
-          position: position || null,
-          status: userType === 'partner' ? 'pending' : 'approved'
-        })
-        .select()
-        .single();
-
-      if (profileError) {
-        console.error('Profile creation error:', profileError);
-        // If profile creation fails, we should clean up the auth user
-        await supabase.auth.admin.deleteUser(authData.user.id);
-        throw new Error('Failed to create user profile');
-      }
-
-      return {
-        user: {
-          ...authData.user,
-          fullName,
-          role: userType,
-          status: userType === 'partner' ? 'pending' : 'approved'
+          user_type: userType
         }
-      };
+      }
+    });
+
+    if (signUpError) throw signUpError;
+    if (!authData.user) throw new Error('No user returned from signup');
+
+    // 2. Check if profile exists
+    const { data: existingProfile } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('id', authData.user.id)
+      .single();
+
+    // 3. Create or update profile
+    const profileData = {
+      id: authData.user.id,
+      email: email,
+      full_name: fullName,
+      user_type: userType,
+      organization: organization || null,
+      position: position || null,
+      status: userType === 'partner' ? 'pending' : 'approved',
+      created_at: new Date().toISOString()
+    };
+
+    const { error: profileError } = existingProfile 
+      ? await supabase
+          .from('profiles')
+          .update(profileData)
+          .eq('id', authData.user.id)
+      : await supabase
+          .from('profiles')
+          .insert([profileData]);
+
+    if (profileError) {
+      console.error('Profile creation error:', profileError);
+      throw new Error(`Failed to create profile: ${profileError.message}`);
     }
+
+    return {
+      user: {
+        ...authData.user,
+        fullName,
+        role: userType,
+        status: userType === 'partner' ? 'pending' : 'approved',
+        createdAt: authData.user.created_at
+      } as AuthUser
+    };
+
   } catch (error) {
-    console.error('Auth error:', error);
+    console.error('SignUp error:', error);
     throw error;
   }
 }
