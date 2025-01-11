@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { AuthProvider } from './components/providers/AuthProvider';
 import { Header } from './components/Header';
 import { Toaster } from 'sonner';
@@ -14,11 +14,22 @@ import PartnerPending from './pages/PartnerPending';
 import PartnerDashboard from './pages/PartnerDashboard';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
+function HeaderWrapper() {
+  const location = useLocation();
+  const noHeaderPaths = ['/dashboard', '/signin', '/signup', '/partner-pending', '/partner-dashboard'];
+  
+  if (noHeaderPaths.some(path => location.pathname.startsWith(path))) {
+    return null;
+  }
+  
+  return <Header />;
+}
+
 function App() {
   return (
     <AuthProvider>
       <Router>
-        <Header />
+        <HeaderWrapper />
         <div className="pt-16"> {/* Add padding to account for fixed header */}
           <Routes>
             <Route path="/" element={<Index />} />

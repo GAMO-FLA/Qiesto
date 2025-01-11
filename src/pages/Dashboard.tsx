@@ -301,12 +301,14 @@ const Dashboard = () => {
 
   const handleSignOut = async () => {
     try {
-      await supabase.auth.signOut()
-      navigate('/signin')
+      await signOut();
+      toast.success('Signed out successfully');
+      navigate('/');
     } catch (error) {
-      toast.error('Error signing out')
+      console.error('Error signing out:', error);
+      toast.error('Error signing out');
     }
-  }
+  };
 
   const StatsCard = ({ stat, index }) => (
     <motion.div
@@ -769,9 +771,9 @@ const Dashboard = () => {
                 </div>
               </div>
               <Button 
-                variant="ghost" 
-                className="w-full justify-start text-gray-600 hover:text-red-600 hover:bg-red-50"
                 onClick={handleSignOut}
+                variant="ghost"
+                className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
               >
                 <LogOut className="mr-2 h-4 w-4" />
                 Sign Out
