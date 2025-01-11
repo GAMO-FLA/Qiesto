@@ -299,17 +299,6 @@ const Dashboard = () => {
     }
   ];
 
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-      toast.success('Signed out successfully');
-      navigate('/');
-    } catch (error) {
-      console.error('Error signing out:', error);
-      toast.error('Error signing out');
-    }
-  };
-
   const StatsCard = ({ stat, index }) => (
     <motion.div
       key={stat.label}
@@ -331,42 +320,6 @@ const Dashboard = () => {
         {stat.change}
       </p>
     </motion.div>
-  );
-
-  const Header = () => (
-    <div className={cn(
-      "fixed top-0 right-0 lg:left-72 left-0 z-40 transition-all duration-200",
-      "bg-gray-50/80 backdrop-blur-sm",
-      isScrolled ? "shadow-sm" : ""
-    )}>
-      <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between p-4 lg:p-0">
-          <button
-            onClick={handleMobileMenuToggle}
-            className="lg:hidden p-2 rounded-lg hover:bg-gray-100"
-          >
-            <Menu className="h-6 w-6 text-gray-600" />
-          </button>
-          {/* <div className="flex-1 lg:flex lg:items-center lg:justify-between">
-            {/* <div className="lg:flex lg:items-center lg:space-x-6">
-              <h2 className="hidden lg:block text-xl font-semibold text-gray-800">
-                {activeView.charAt(0).toUpperCase() + activeView.slice(1)}
-              </h2>
-            </div> */}
-            {/* <div className="flex items-center space-x-4">
-              <NotificationsDropdown />
-              <Link to="/challenges" className="hover:no-underline">
-                <Button className="bg-primary text-white rounded-xl hover:bg-primary/90 transition-colors">
-                  <Plus className="mr-2 h-5 w-5" />
-                  <span className="hidden sm:inline">Browse Challenges</span>
-                  <span className="sm:hidden">Browse</span>
-                </Button>
-              </Link>
-            </div> 
-          </div> */}
-        </div>
-      </div>
-    </div>
   );
 
   const renderMainContent = () => {
@@ -663,8 +616,6 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-50/50">
-      <Header />
-      
       {isMobileMenuOpen && (
         <div 
           className="lg:hidden fixed inset-0 bg-black/50 z-40"
@@ -770,8 +721,17 @@ const Dashboard = () => {
                   <p className="text-sm text-gray-500">{user?.email}</p>
                 </div>
               </div>
-              <Button 
-                onClick={handleSignOut}
+              <Button
+                onClick={async () => {
+                  try {
+                    await signOut();
+                    toast.success('Signed out successfully');
+                    navigate('/');
+                  } catch (error) {
+                    console.error('Logout error:', error);
+                    toast.error('Error signing out');
+                  }
+                }}
                 variant="ghost"
                 className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
               >
@@ -782,7 +742,6 @@ const Dashboard = () => {
           </div>
         </div>
       </aside>
-        {/* Update the main content */}
         <main className={cn(
           "transition-all duration-200 ease-in-out",
           "lg:ml-72 px-4 sm:px-6 lg:px-8",

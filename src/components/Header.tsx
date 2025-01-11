@@ -42,6 +42,7 @@ export const Header = () => {
       toast.success('Signed out successfully');
       navigate('/');
     } catch (error) {
+      console.error('Logout error:', error);
       toast.error('Error signing out');
     }
   };
@@ -51,7 +52,7 @@ export const Header = () => {
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+      className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-500 ${
         scrolled 
           ? 'bg-white/80 backdrop-blur-xl shadow-lg shadow-black/[0.03]' 
           : 'bg-transparent backdrop-blur-sm'
@@ -110,39 +111,49 @@ export const Header = () => {
                   </Button>
                 </motion.div>
 
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <motion.div whileHover={{ scale: 1.02 }}>
-                      <Button
-                        variant="ghost"
-                        className="rounded-xl hover:bg-primary/5 border border-gray-200/50 shadow-sm pl-3 pr-2 group"
+                <div className="relative">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button 
+                        variant="ghost" 
+                        className="relative rounded-full h-8 w-8 border border-gray-200"
                       >
-                        <div className="flex items-center space-x-2">
-                          <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary/10 to-blue-500/10 flex items-center justify-center">
-                            {user.fullName?.[0] || user.email?.[0] || <User className="h-4 w-4 text-primary" />}
-                          </div>
-                          <span className="text-sm font-medium">{user.fullName}</span>
-                          <ChevronDown className="h-4 w-4 text-gray-400 transition-transform group-hover:rotate-180" />
-                        </div>
+                        <User className="h-4 w-4" />
                       </Button>
-                    </motion.div>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56">
-                    <DropdownMenuItem onClick={() => navigate('/dashboard')}>
-                      <LayoutDashboard className="mr-2 h-4 w-4" />
-                      Dashboard
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => navigate('/dashboard?view=settings')}>
-                      <Settings className="mr-2 h-4 w-4" />
-                      Settings
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={handleLogout} className="text-red-600">
-                      <LogOut className="mr-2 h-4 w-4" />
-                      Sign out
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent 
+                      align="end" 
+                      className="w-56 z-[101] mt-2 bg-white rounded-xl shadow-lg border border-gray-100"
+                    >
+                      <div className="px-2 py-1.5 border-b border-gray-100">
+                        <p className="text-sm font-medium">{user.fullName}</p>
+                        <p className="text-xs text-gray-500">{user.email}</p>
+                      </div>
+                      <DropdownMenuItem 
+                        onClick={() => navigate('/dashboard')}
+                        className="cursor-pointer hover:bg-gray-50"
+                      >
+                        <LayoutDashboard className="mr-2 h-4 w-4" />
+                        Dashboard
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        onClick={() => navigate('/dashboard?view=settings')}
+                        className="cursor-pointer hover:bg-gray-50"
+                      >
+                        <Settings className="mr-2 h-4 w-4" />
+                        Settings
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem 
+                        onClick={handleLogout}
+                        className="text-red-600 cursor-pointer hover:bg-red-50 hover:text-red-700"
+                      >
+                        <LogOut className="mr-2 h-4 w-4" />
+                        Sign out
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
               </div>
             ) : (
               <AnimatePresence>
