@@ -7,51 +7,62 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    // First, get the initial session
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session?.user) {
-        supabase
-          .from('profiles')
-          .select('user_type, status')
-          .eq('id', session.user.id)
-          .single()
-          .then(({ data: profile, error }) => {
-            if (!error && profile) {
-              setUser({
-                ...session.user,
-                role: profile.user_type || 'participant',
-                status: profile.status || 'pending'
-              })
-            }
-          })
+        try {
+          const { data: profile, error } = await supabase
+            .from('profiles')
+            .select('user_type, status, full_name')
+            .eq('id', session.user.id)
+            .single()
+          
+          if (!error && profile) {
+            setUser({
+              ...session.user,
+              fullName: profile.full_name,
+              role: profile.user_type || 'participant',
+              status: profile.status || 'pending'
+            })
+          }
+        } catch (error) {
+          console.error('Error fetching user profile:', error)
+        }
       }
       setLoading(false)
     })
 
-    const subscription = supabase.auth.onAuthStateChange(async (event, session) => {
-      try {
-        if (session?.user) {
+    // Then set up the auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session?.user) {
+        try {
           const { data: profile, error } = await supabase
             .from('profiles')
-            .select('user_type, status')
+            .select('user_type, status, full_name')
             .eq('id', session.user.id)
             .single()
           
-          if (error) throw error
-          
-          setUser({
-            ...session.user,
-            role: profile?.user_type || 'participant',
-            status: profile?.status || 'pending'
-          })
+          if (!error && profile) {
+            setUser({
+              ...session.user,
+              fullName: profile.full_name,
+              role: profile.user_type || 'participant',
+              status: profile.status || 'pending'
+            })
+          }
+        } catch (error) {
+          console.error('Error fetching user profile:', error)
+          setUser(null)
         }
-      } catch (error) {
-        console.error('Error fetching user profile:', error)
+      } else {
         setUser(null)
       }
       setLoading(false)
     })
 
-    return () => subscription.data.subscription.unsubscribe()
+    return () => {
+      subscription.unsubscribe()
+    }
   }, [])
 
   return (
