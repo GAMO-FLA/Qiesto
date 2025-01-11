@@ -21,8 +21,30 @@ export type UserData = {
   status?: 'pending' | 'approved'
 }
 
+const RATE_LIMIT_ATTEMPTS = 5;
+const RATE_LIMIT_WINDOW = 15 * 60 * 1000; // 15 minutes
+
+const loginAttempts = new Map<string, { count: number; timestamp: number }>();
+
 export const signIn = async ({ email, password }: SignInCredentials) => {
   try {
+    // Rate limiting check
+    const userAttempts = loginAttempts.get(email) || { count: 0, timestamp: Date.now() };
+    if (Date.now() - userAttempts.timestamp > RATE_LIMIT_WINDOW) {
+      // Reset if window has passed
+      userAttempts.count = 0;
+      userAttempts.timestamp = Date.now();
+    }
+    if (userAttempts.count >= RATE_LIMIT_ATTEMPTS) {
+      throw new Error('Too many login attempts. Please try again later.');
+    }
+
+    // Increment attempt counter
+    loginAttempts.set(email, {
+      count: userAttempts.count + 1,
+      timestamp: userAttempts.timestamp
+    });
+
     // Handle test accounts first
     if (email === 'participant@qiesta.com' && password === 'Asdfgh12345!') {
       console.log('Skipping sign in for default participant');
@@ -65,29 +87,48 @@ export const signIn = async ({ email, password }: SignInCredentials) => {
     console.log('Starting sign in...');
     const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
       email,
-      password
+      password,
+      options: {
+        captchaToken: undefined // Add reCAPTCHA if needed
+      }
     });
 
-    if (authError) throw authError;
-    if (!authData.user) throw new Error('No user returned');
+    if (authError) {
+      console.error('Auth error:', authError);
+      throw authError;
+    }
+    
+    if (!authData.user) {
+      console.error('No user returned');
+      throw new Error('No user returned');
+    }
 
     // Get user profile
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('user_type, status, full_name')
+      .select('full_name, user_type, status')
       .eq('id', authData.user.id)
       .single();
     
-    if (profileError) throw profileError;
+    if (profileError) {
+      console.error('Profile fetch error:', profileError);
+      throw new Error('Failed to fetch user profile');
+    }
 
-    return {
-      user: {
-        ...authData.user,
-        fullName: profile?.full_name,
-        role: profile?.user_type || 'participant',
-        status: profile?.status || 'pending'
-      }
+    if (!profile) {
+      console.error('No profile found');
+      throw new Error('No profile found');
+    }
+
+    const user = {
+      ...authData.user,
+      fullName: profile.full_name,
+      role: profile.user_type || 'participant',
+      status: profile.status || 'pending'
     };
+
+    console.log('Sign in successful:', user);
+    return { user };
 
   } catch (error) {
     console.error('SignIn error:', error);
@@ -201,17 +242,17 @@ export const getCurrentUser = async (): Promise<AuthUser | null> => {
   
   const { data: profile } = await supabase
     .from('profiles')
-    .select('fullName, role, status')
+    .select('full_name, user_type, status')
     .eq('id', user.id)
     .single()
     
-    return {
-      ...user,
-      fullName: profile?.fullName,
-      role: profile?.role || 'participant',
-      status: profile?.status || 'pending',
-      createdAt: user.created_at
-    } as AuthUser
+  return {
+    ...user,
+    fullName: profile?.full_name,
+    role: profile?.user_type || 'participant',
+    status: profile?.status || 'pending',
+    createdAt: user.created_at
+  } as AuthUser
 }
 
 export const isAuthenticated = async (): Promise<boolean> => {

@@ -29,6 +29,32 @@ const SignUp = () => {
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
 
+  const validatePassword = (password: string): boolean => {
+    const minLength = 8;
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasLowerCase = /[a-z]/.test(password);
+    const hasNumbers = /\d/.test(password);
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+    if (password.length < minLength) {
+      toast.error('Password must be at least 8 characters long');
+      return false;
+    }
+    if (!hasUpperCase || !hasLowerCase) {
+      toast.error('Password must contain both uppercase and lowercase letters');
+      return false;
+    }
+    if (!hasNumbers) {
+      toast.error('Password must contain at least one number');
+      return false;
+    }
+    if (!hasSpecialChar) {
+      toast.error('Password must contain at least one special character');
+      return false;
+    }
+    return true;
+  };
+
   const validateForm = () => {
     if (!formData.email || !formData.password || !formData.fullName) {
       throw new Error('All fields are required');
@@ -37,8 +63,7 @@ const SignUp = () => {
       toast.error('Passwords do not match');
       return false;
     }
-    if (formData.password.length < 8) {
-      toast.error('Password must be at least 8 characters long');
+    if (!validatePassword(formData.password)) {
       return false;
     }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
