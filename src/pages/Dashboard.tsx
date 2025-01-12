@@ -151,18 +151,59 @@ const Dashboard = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
+  const allChallenges = [
+    {
+      id: '1',
+      title: "Rwanda Tech Innovation Challenge",
+      description: "Develop solutions for digital transformation in Rwanda",
+      organization: "Rwanda ICT Chamber",
+      participants: 450,
+      status: "Active",
+      submissions: 125,
+      progress: 65,
+      daysLeft: 14,
+      prize: "$50,000",
+      deadline: "2024-05-15"
+    },
+    // ... more challenges
+  ];
+
+  const handleMobileMenuToggle = useCallback(() => {
+    setIsMobileMenuOpen(prev => !prev);
+    document.body.style.overflow = isMobileMenuOpen ? 'auto' : 'hidden';
+  }, [isMobileMenuOpen]);
+
+  const filteredChallenges = useChallenges(allChallenges, searchQuery, selectedFilter);
+  const displayedChallenges = showAllChallenges ? filteredChallenges : filteredChallenges.slice(0, 3);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 0);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
+  }, []);
+
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="h-8 w-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
+          <p className="text-gray-500">Loading your dashboard...</p>
+        </div>
+      </div>
+    );
   }
 
   if (!user) {
-    return <Navigate to="/signin" />
-  } else if (user.role === 'partner') {
-    console.log('User is a partner');
-  } else if (user.role === 'participant') {
-    console.log('User is a participant');
-  } else {
-    console.error('Invalid user role');
+    return <Navigate to="/signin" />;
   }
 
   const MENU_ITEMS = [
