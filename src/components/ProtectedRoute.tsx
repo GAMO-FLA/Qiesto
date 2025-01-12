@@ -1,11 +1,12 @@
 import { Navigate } from 'react-router-dom'
-import { useAuth } from '@/contexts/AuthContext'
+import { useAuth } from '@/lib/auth'
+
 interface ProtectedRouteProps {
   children: React.ReactNode
-  allowedRoles?: ('partner' | 'participant')[]
+  allowedRoles: string[]
 }
 
-export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
+export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
   const { user, loading } = useAuth();
 
   if (loading) {
@@ -16,9 +17,9 @@ export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) 
     return <Navigate to="/signin" />;
   }
 
-  if (allowedRoles && user.role && !allowedRoles.includes(user.role as 'partner' | 'participant')) {
-    return <Navigate to={user.role === 'partner' ? '/partner-dashboard' : '/dashboard'} />;
+  if (!allowedRoles.includes(user.role || '')) {
+    return <Navigate to="/" />;
   }
 
   return <>{children}</>;
-};
+}

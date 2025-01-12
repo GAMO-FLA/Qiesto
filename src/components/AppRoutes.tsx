@@ -1,12 +1,26 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { AuthProvider } from './components/providers/AuthProvider';
-import { AppRoutes } from './components/AppRoutes';
-import { Toaster } from 'sonner';
+import { Routes, Route, useLocation } from 'react-router-dom';
+import { Header } from './Header';
+import Index from '@/pages/Index';
+import Challenges from '@/pages/Challenges';
+import Projects from '@/pages/Projects';
+import Community from '@/pages/Community';
+import SignIn from '@/pages/SignIn';
+import SignUp from '@/pages/SignUp';
+import ForgotPassword from '@/pages/ForgotPassword';
+import Dashboard from '@/pages/Dashboard';
+import PartnerPending from '@/pages/PartnerPending';
+import PartnerDashboard from '@/pages/PartnerDashboard';
+import { ProtectedRoute } from './ProtectedRoute';
 
-function App() {
+export function AppRoutes() {
+  const location = useLocation();
+  const noHeaderPaths = ['/dashboard', '/signin', '/signup', '/partner-pending', '/partner-dashboard'];
+  const showHeader = !noHeaderPaths.some(path => location.pathname.startsWith(path));
+  
   return (
-    <AuthProvider>
-      <Router>
+    <>
+      {showHeader && <Header />}
+      <div className={showHeader ? "pt-16" : ""}> {/* Only add padding when header is shown */}
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/challenges" element={<Challenges />} />
@@ -42,9 +56,7 @@ function App() {
             }
           />
         </Routes>
-      </Router>
-    </AuthProvider>
+      </div>
+    </>
   );
-}
-
-export default App;
+} 

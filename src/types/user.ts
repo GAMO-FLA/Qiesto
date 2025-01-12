@@ -1,12 +1,17 @@
 import { User as SupabaseUser } from '@supabase/supabase-js'
 
+export interface Organization {
+  name: string;
+  logo?: string;
+}
+
 export interface User extends SupabaseUser {
   id: string;
   email: string;
   fullName?: string;
   userType: 'partner' | 'participant';
   status?: 'pending' | 'active';
-  organization?: string;
+  organization?: Organization;
   createdAt?: string;
 }
 

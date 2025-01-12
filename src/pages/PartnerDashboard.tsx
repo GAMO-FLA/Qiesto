@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, Link } from 'react-router-dom';
 import { 
@@ -6,7 +6,8 @@ import {
   ChevronRight, Sparkles, TrendingUp, Activity, BarChart,
   Search, Filter, Building2, ArrowRight, Bell, Mail, Shield,
   PenTool, Eye, Archive, Calendar, DollarSign, Award, Trophy,
-  Play, CheckCircle, Download, InboxIcon, Github, List, LayoutGrid
+  Play, CheckCircle, Download, InboxIcon, Github, List, LayoutGrid,
+  Menu, X
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,6 +23,154 @@ import { NewChallengeForm } from '@/components/partner-dashboard/NewChallengeFor
 import { SubmissionsTable } from '@/components/partner-dashboard/SubmissionsTable';
 import { OverviewView } from '@/components/partner-dashboard/OverviewView';
 import { SettingsView } from '@/components/partner-dashboard/SettingsView';
+import { cn } from "@/lib/utils";
+import { useMediaQuery } from '@/hooks/useMediaQuery';
+
+const StatsCard = ({ stat, index }) => (
+  <motion.div
+    key={stat.label}
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay: index * 0.1 }}
+    className="bg-white rounded-xl p-4 lg:p-6 shadow-sm hover:shadow-md transition-all"
+  >
+    <div className="flex items-center justify-between mb-4">
+      <div className={`p-2 sm:p-3 rounded-xl ${stat.bg}`}>
+        <stat.icon className={`h-5 w-5 sm:h-6 sm:w-6 ${stat.color}`} />
+      </div>
+      <TrendingUp className="h-4 w-4 text-green-500" />
+    </div>
+    <p className="text-gray-600 text-xs sm:text-sm mb-1">{stat.label}</p>
+    <p className="text-2xl sm:text-3xl font-bold mb-2">{stat.value}</p>
+    <p className="text-green-500 text-xs sm:text-sm flex items-center">
+      <Activity className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+      {stat.change}
+    </p>
+  </motion.div>
+);
+
+const ChallengeCard = ({ challenge, index }) => (
+  <motion.div
+    key={challenge.id}
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay: index * 0.1 }}
+    className="bg-white rounded-xl p-4 lg:p-6 shadow-sm hover:shadow-md transition-all"
+  >
+    <div className="flex flex-col lg:flex-row lg:items-start space-y-4 lg:space-y-0 lg:space-x-4">
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center space-x-3 mb-3">
+          <div className="p-2 bg-primary/10 rounded-lg flex-shrink-0">
+            <FileText className="h-5 w-5 text-primary" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3 className="font-medium text-lg truncate">{challenge.title}</h3>
+            <p className="text-sm text-gray-600 line-clamp-2">{challenge.description}</p>
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-2 mb-3">
+          {challenge.categories.map((category) => (
+            <Badge key={category} variant="secondary" className="bg-primary/10 text-primary">
+              {category}
+            </Badge>
+          ))}
+        </div>
+      </div>
+      <div className="flex flex-row lg:flex-col items-center lg:items-end justify-between lg:justify-start space-y-0 lg:space-y-2">
+        <Badge 
+          variant="secondary"
+          className={cn(
+            "rounded-lg px-3 py-1",
+            challenge.status === 'active' 
+              ? 'bg-green-100 text-green-700' 
+              : 'bg-blue-100 text-blue-700'
+          )}
+        >
+          {challenge.status.charAt(0).toUpperCase() + challenge.status.slice(1)}
+        </Badge>
+        <p className="text-primary font-semibold">{challenge.prize}</p>
+      </div>
+    </div>
+    <div className="mt-4 pt-4 border-t border-gray-200">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div>
+          <p className="text-sm text-gray-500">Participants</p>
+          <p className="font-medium">{challenge.participants}</p>
+        </div>
+        <div>
+          <p className="text-sm text-gray-500">Submissions</p>
+          <p className="font-medium">{challenge.submissions}</p>
+        </div>
+        <div>
+          <p className="text-sm text-gray-500">Time Left</p>
+          <p className="font-medium">{challenge.daysLeft} days</p>
+        </div>
+        <div className="col-span-2 sm:col-span-1">
+          <p className="text-sm text-gray-500">Progress</p>
+          <div className="w-full h-2 bg-gray-200 rounded-full mt-1">
+            <div 
+              className="h-full bg-primary rounded-full transition-all duration-300"
+              style={{ width: `${challenge.progress}%` }}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  </motion.div>
+);
+
+const Header = ({ activeView, handleMobileMenuToggle, setShowNewChallengeModal, isScrolled }) => (
+  <div className={cn(
+    "fixed top-0 right-0 lg:left-72 left-0 z-40 transition-all duration-200",
+    "bg-gray-50/80 backdrop-blur-sm",
+    isScrolled ? "shadow-sm" : ""
+  )}>
+    <div className="max-w-7xl mx-auto">
+      <div className="flex items-center justify-between p-4 lg:p-6">
+        <button
+          onClick={handleMobileMenuToggle}
+          className="lg:hidden p-2 rounded-lg hover:bg-gray-100"
+        >
+          <Menu className="h-6 w-6 text-gray-600" />
+        </button>
+        <div className="flex items-center space-x-3">
+          <Button 
+            onClick={() => setShowNewChallengeModal(true)}
+            className="bg-primary text-white px-3 sm:px-4"
+            size="sm"
+          >
+            <Plus className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Create Challenge</span>
+          </Button>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+const SearchBar = ({ searchQuery, setSearchQuery, selectedFilter, setSelectedFilter }) => (
+  <div className="flex flex-col sm:flex-row gap-4 mb-6">
+    <div className="relative flex-1">
+      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+      <Input
+        placeholder="Search..."
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        className="pl-10 w-full"
+      />
+    </div>
+    <select
+      value={selectedFilter}
+      onChange={(e) => setSelectedFilter(e.target.value)}
+      className="border border-gray-200 rounded-lg px-3 py-2 text-sm w-full sm:w-auto"
+    >
+      <option value="all">All Status</option>
+      <option value="active">Active</option>
+      <option value="draft">Draft</option>
+      <option value="completed">Completed</option>
+    </select>
+  </div>
+);
 
 const PartnerDashboard = () => {
   const [activeView, setActiveView] = useState('overview');
@@ -55,24 +204,32 @@ const PartnerDashboard = () => {
     status: 'pending'
   });
 
-  // useEffect(() => {
-  //   const loadUser = async () => {
-  //     const currentUser = await getCurrentUser();
-  //     if (!currentUser) {
-  //       navigate('/signin');
-  //     } else if (currentUser.role !== 'partner') {
-  //       navigate('/dashboard');
-  //     } else if (currentUser.status === 'pending') {
-  //       navigate('/partner-pending');
-  //     }
-  //     setUser(currentUser);
-  //   };
-  //   loadUser();
-  // }, [navigate]);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 0);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const handleMobileMenuToggle = useCallback(() => {
+    setIsMobileMenuOpen(prev => !prev);
+    document.body.style.overflow = isMobileMenuOpen ? 'auto' : 'hidden';
+  }, [isMobileMenuOpen]);
+
+  useEffect(() => {
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
+  }, []);
 
   const handleSignOut = async () => {
     try {
-      await signOut();
+      // await signOut();
       navigate('/signin');
     } catch (error) {
       console.error('Error signing out:', error);
@@ -223,28 +380,12 @@ const PartnerDashboard = () => {
               </Button>
             </div>
 
-            <div className="flex items-center space-x-4 mb-6">
-              <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  placeholder="Search challenges..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-              <select
-                value={selectedFilter}
-                onChange={(e) => setSelectedFilter(e.target.value)}
-                className="border border-gray-200 rounded-lg px-3 py-2"
-              >
-                <option value="all">All Status</option>
-                <option value="active">Active</option>
-                <option value="draft">Draft</option>
-                <option value="completed">Completed</option>
-                <option value="archived">Archived</option>
-              </select>
-            </div>
+            <SearchBar
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              selectedFilter={selectedFilter}
+              setSelectedFilter={setSelectedFilter}
+            />
 
             <Tabs defaultValue="all" className="w-full">
               <TabsList className="w-full justify-start">
@@ -256,97 +397,12 @@ const PartnerDashboard = () => {
 
               <TabsContent value="all" className="mt-6">
                 <div className="grid gap-6">
-                  {challenges.map((challenge) => (
-                    <motion.div
+                  {challenges.map((challenge, index) => (
+                    <ChallengeCard
                       key={challenge.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-all"
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-start space-x-4">
-                          <div className="p-3 bg-primary/10 rounded-xl">
-                            <FileText className="h-5 w-5 text-primary" />
-                          </div>
-                          <div>
-                            <h3 className="font-medium text-lg group-hover:text-primary transition-colors">
-                              {challenge.title}
-                            </h3>
-                            <p className="text-gray-600 text-sm mb-3">
-                              {challenge.description}
-                            </p>
-                            <div className="flex flex-wrap gap-2">
-                              {challenge.categories.map((category) => (
-                                <Badge 
-                                  key={category}
-                                  variant="secondary" 
-                                  className="bg-primary/10 text-primary"
-                                >
-                                  {category}
-                                </Badge>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex flex-col items-end space-y-2">
-                          <Badge 
-                            variant="secondary"
-                            className={`${
-                              challenge.status === 'active' 
-                                ? 'bg-green-100 text-green-700' 
-                                : challenge.status === 'draft'
-                                ? 'bg-yellow-100 text-yellow-700'
-                                : 'bg-gray-100 text-gray-700'
-                            } rounded-lg px-3 py-1`}
-                          >
-                            {challenge.status.charAt(0).toUpperCase() + challenge.status.slice(1)}
-                          </Badge>
-                          <p className="text-primary font-semibold">
-                            {challenge.prize}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="mt-4 pt-4 border-t border-gray-200">
-                        <div className="flex items-center justify-between">
-                          <div className="grid grid-cols-3 gap-6">
-                            <div>
-                              <p className="text-sm text-gray-500">Participants</p>
-                              <p className="font-medium">{challenge.participants}</p>
-                            </div>
-                            <div>
-                              <p className="text-sm text-gray-500">Submissions</p>
-                              <p className="font-medium">{challenge.submissions}</p>
-                            </div>
-                            <div>
-                              <p className="text-sm text-gray-500">Time Left</p>
-                              <p className="font-medium">{challenge.daysLeft} days</p>
-                            </div>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <Button variant="ghost" size="sm">
-                              <Eye className="h-4 w-4 mr-1" />
-                              View
-                            </Button>
-                            <Button variant="ghost" size="sm">
-                              <PenTool className="h-4 w-4 mr-1" />
-                              Edit
-                            </Button>
-                            {challenge.status === 'draft' ? (
-                              <Button variant="ghost" size="sm" className="text-green-600 hover:text-green-700">
-                                <Play className="h-4 w-4 mr-1" />
-                                Publish
-                              </Button>
-                            ) : (
-                              <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700">
-                                <Archive className="h-4 w-4 mr-1" />
-                                Archive
-                              </Button>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </motion.div>
+                      challenge={challenge}
+                      index={index}
+                    />
                   ))}
                 </div>
               </TabsContent>
@@ -577,8 +633,35 @@ const PartnerDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-50/50">
-      {/* Sidebar */}
-      <aside className="fixed left-0 top-0 h-screen w-72 bg-white border-r border-gray-200 z-50">
+      <Header
+        activeView={activeView}
+        handleMobileMenuToggle={handleMobileMenuToggle}
+        setShowNewChallengeModal={setShowNewChallengeModal}
+        isScrolled={isScrolled}
+      />
+      
+      {isMobileMenuOpen && (
+        <div 
+          className="lg:hidden fixed inset-0 bg-black/50 z-40"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
+      {/* Update the sidebar */}
+      <aside className={cn(
+        "fixed left-0 top-0 h-screen bg-white border-r border-gray-200 z-50",
+        "w-72 transition-transform duration-200 ease-in-out overflow-y-auto",
+        "lg:translate-x-0",
+        isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+      )}>
+        <button
+          onClick={() => setIsMobileMenuOpen(false)}
+          className="lg:hidden absolute top-4 right-4 p-2 rounded-lg hover:bg-gray-100"
+        >
+          <X className="h-6 w-6 text-gray-600" />
+        </button>
+
+        {/* Existing sidebar content */}
         <div className="flex flex-col h-full">
           <div className="p-6 border-b border-gray-100">
             <Link to="/" className="flex items-center space-x-2">
@@ -659,7 +742,7 @@ const PartnerDashboard = () => {
             </div>
           </nav>
 
-          <div className="p-4 border-t border-gray-100">
+          <div className="sticky bottom-0 left-0 right-0 p-4 border-t border-gray-100 bg-white">
             <Button
               variant="ghost"
               className="w-full justify-start text-gray-600 hover:text-red-600 hover:bg-red-50"
@@ -672,136 +755,19 @@ const PartnerDashboard = () => {
         </div>
       </aside>
 
-      {/* Main Content */}
-      <main className="ml-72 p-8">
-        {renderMainContent()}
+      {/* Update the main content */}
+      <main className={cn(
+        "transition-all duration-200 ease-in-out",
+        "lg:ml-72 px-4 sm:px-6 lg:px-8",
+        "pt-20 sm:pt-24 pb-12"
+      )}>
+        <div className="max-w-7xl mx-auto space-y-6">
+          {renderMainContent()}
+        </div>
       </main>
 
-      {/* New Challenge Modal */}
-      <Dialog open={showNewChallengeModal} onOpenChange={setShowNewChallengeModal}>
-        <DialogContent className="sm:max-w-[800px]">
-          <DialogHeader>
-            <DialogTitle>Create New Challenge</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleCreateChallenge} className="space-y-6">
-            <div className="grid grid-cols-2 gap-6">
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Title</label>
-                  <Input
-                    value={newChallenge.title}
-                    onChange={(e) => setNewChallenge({ ...newChallenge, title: e.target.value })}
-                    placeholder="Enter challenge title"
-                    required
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium mb-1">Description</label>
-                  <textarea
-                    className="w-full min-h-[100px] rounded-md border border-gray-200 p-2"
-                    value={newChallenge.description}
-                    onChange={(e) => setNewChallenge({ ...newChallenge, description: e.target.value })}
-                    placeholder="Describe your challenge"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1">Prize</label>
-                  <Input
-                    value={newChallenge.prize}
-                    onChange={(e) => setNewChallenge({ ...newChallenge, prize: e.target.value })}
-                    placeholder="e.g. $10,000"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1">Categories</label>
-                  <Input
-                    value={newChallenge.categories}
-                    onChange={(e) => setNewChallenge({ ...newChallenge, categories: e.target.value })}
-                    placeholder="e.g. AI, Healthcare (comma separated)"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Deadline</label>
-                  <Input
-                    type="date"
-                    value={newChallenge.deadline}
-                    onChange={(e) => setNewChallenge({ ...newChallenge, deadline: e.target.value })}
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1">Max Participants</label>
-                  <Input
-                    type="number"
-                    value={newChallenge.maxParticipants}
-                    onChange={(e) => setNewChallenge({ ...newChallenge, maxParticipants: e.target.value })}
-                    placeholder="Enter maximum participants"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1">Submission Format</label>
-                  <select
-                    value={newChallenge.submissionFormat}
-                    onChange={(e) => setNewChallenge({ ...newChallenge, submissionFormat: e.target.value })}
-                    className="w-full rounded-md border border-gray-200 p-2"
-                    required
-                  >
-                    <option value="github">GitHub Repository</option>
-                    <option value="file">File Upload</option>
-                    <option value="url">Project URL</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1">Evaluation Criteria</label>
-                  <textarea
-                    className="w-full min-h-[100px] rounded-md border border-gray-200 p-2"
-                    value={newChallenge.evaluationCriteria}
-                    onChange={(e) => setNewChallenge({ ...newChallenge, evaluationCriteria: e.target.value })}
-                    placeholder="Enter evaluation criteria"
-                    required
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-1">Terms and Conditions</label>
-              <textarea
-                className="w-full min-h-[100px] rounded-md border border-gray-200 p-2"
-                value={newChallenge.termsAndConditions}
-                onChange={(e) => setNewChallenge({ ...newChallenge, termsAndConditions: e.target.value })}
-                placeholder="Enter terms and conditions"
-                required
-              />
-            </div>
-
-            <div className="flex justify-end space-x-4">
-              <Button 
-                type="button" 
-                variant="outline"
-                onClick={() => setShowNewChallengeModal(false)}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" className="bg-primary text-white">
-                Create Challenge
-              </Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
+      {/* Keep the modals at the end */}
+      {/* ... existing modals ... */}
     </div>
   );
 };

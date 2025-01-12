@@ -18,6 +18,11 @@ export type SignUpCredentials = {
   status?: 'pending' | 'approved';
 };
 
+const RATE_LIMIT_ATTEMPTS = 5;
+const RATE_LIMIT_WINDOW = 15 * 60 * 1000; // 15 minutes
+
+const loginAttempts = new Map<string, { count: number; timestamp: number }>();
+
 export const signIn = async ({ email, password }: SignInCredentials) => {
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
@@ -31,7 +36,14 @@ export const signIn = async ({ email, password }: SignInCredentials) => {
   }
 };
 
-export const signUp = async ({ email, password, fullName, userType, organization, position }: SignUpCredentials) => {
+export const signUp = async ({ 
+  email, 
+  password, 
+  fullName, 
+  userType, 
+  organization, 
+  position 
+}: SignUpCredentials) => {
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;

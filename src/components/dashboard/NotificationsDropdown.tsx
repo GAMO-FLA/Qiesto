@@ -1,85 +1,155 @@
-import React from 'react';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Button } from "@/components/ui/button";
-import { Bell, User, Trophy, MessageSquare } from "lucide-react";
-import { motion } from 'framer-motion';
+import React, { useState } from 'react';
+import { Bell, Check, Clock, Info, MessageSquare, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 const notifications = [
   {
     id: 1,
-    type: 'submission',
-    title: 'New Challenge Submission',
-    message: 'John Doe submitted a solution to Rwanda Tech Innovation Challenge',
+    type: 'challenge',
+    title: 'New Challenge Available',
+    message: 'Tech Innovation Challenge 2024 is now open for submissions',
     time: '2 minutes ago',
-    icon: Trophy,
+    unread: true,
+    icon: Info,
+    color: 'text-blue-500',
+    bg: 'bg-blue-50'
   },
   {
     id: 2,
-    type: 'participant',
-    title: 'New Participant',
-    message: 'Alice Smith joined the FinTech Hackathon',
+    type: 'message',
+    title: 'Team Message',
+    message: 'Sarah commented on your submission',
     time: '1 hour ago',
-    icon: User,
+    unread: true,
+    icon: MessageSquare,
+    color: 'text-green-500',
+    bg: 'bg-green-50'
   },
   {
     id: 3,
-    type: 'comment',
-    title: 'New Comment',
-    message: 'Bob left a comment on your challenge',
-    time: '2 hours ago',
-    icon: MessageSquare,
-  },
+    type: 'deadline',
+    title: 'Deadline Approaching',
+    message: 'Rwanda Tech Challenge ends in 2 days',
+    time: '3 hours ago',
+    unread: false,
+    icon: Clock,
+    color: 'text-yellow-500',
+    bg: 'bg-yellow-50'
+  }
 ];
 
 const NotificationsDropdown = () => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(2);
+
+  const markAllAsRead = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setUnreadCount(0);
+  };
+
   return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <Button 
-          variant="outline" 
-          size="icon"
-          className="relative rounded-xl hover:bg-primary/5 hover:text-primary transition-colors"
-        >
-          <Bell className="h-5 w-5" />
-          <span className="absolute -top-1 -right-1 h-3 w-3 bg-primary rounded-full" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-80 p-0" align="end">
-        <div className="p-4 border-b border-gray-100">
-          <h3 className="font-semibold">Notifications</h3>
-        </div>
-        <div className="max-h-80 overflow-y-auto">
-          {notifications.map((notification) => (
+    <div className="relative">
+      <Button
+        variant="ghost"
+        size="icon"
+        className="relative"
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        <Bell className="h-5 w-5" />
+        {unreadCount > 0 && (
+          <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-red-500 text-white text-xs flex items-center justify-center">
+            {unreadCount}
+          </span>
+        )}
+      </Button>
+
+      <AnimatePresence>
+        {isOpen && (
+          <>
+            <div
+              className="fixed inset-0 z-40"
+              onClick={() => setIsOpen(false)}
+            />
             <motion.div
-              key={notification.id}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="p-4 border-b border-gray-100 last:border-0 hover:bg-gray-50 cursor-pointer"
+              exit={{ opacity: 0, y: 10 }}
+              transition={{ duration: 0.2 }}
+              className={cn(
+                "absolute right-0 mt-2 w-80 sm:w-96 rounded-xl shadow-lg z-50",
+                "bg-white border border-gray-200 py-2"
+              )}
             >
-              <div className="flex items-start space-x-3">
-                <div className={`p-2 rounded-lg bg-primary/10 text-primary`}>
-                  <notification.icon className="h-4 w-4" />
-                </div>
-                <div>
-                  <p className="font-medium text-sm">{notification.title}</p>
-                  <p className="text-gray-600 text-sm">{notification.message}</p>
-                  <p className="text-gray-400 text-xs mt-1">{notification.time}</p>
+              <div className="px-4 py-2 border-b border-gray-100">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-semibold text-gray-900">Notifications</h3>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-gray-600 text-sm hover:text-primary"
+                    onClick={markAllAsRead}
+                  >
+                    <Check className="h-4 w-4 mr-1" />
+                    Mark all as read
+                  </Button>
                 </div>
               </div>
+
+              <div className="max-h-[calc(100vh-200px)] overflow-y-auto">
+                {notifications.map((notification) => (
+                  <div
+                    key={notification.id}
+                    className={cn(
+                      "px-4 py-3 hover:bg-gray-50 transition-colors cursor-pointer",
+                      notification.unread && "bg-gray-50"
+                    )}
+                  >
+                    <div className="flex items-start space-x-3">
+                      <div className={cn(
+                        "p-2 rounded-lg flex-shrink-0",
+                        notification.bg
+                      )}>
+                        <notification.icon className={cn(
+                          "h-4 w-4",
+                          notification.color
+                        )} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between">
+                          <p className={cn(
+                            "font-medium text-sm",
+                            notification.unread ? "text-gray-900" : "text-gray-600"
+                          )}>
+                            {notification.title}
+                          </p>
+                          <span className="text-xs text-gray-500 whitespace-nowrap ml-2">
+                            {notification.time}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                          {notification.message}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="px-4 py-2 border-t border-gray-100">
+                <Button
+                  variant="ghost"
+                  className="w-full text-primary hover:bg-primary/5 text-sm"
+                >
+                  View all notifications
+                </Button>
+              </div>
             </motion.div>
-          ))}
-        </div>
-        <div className="p-2 border-t border-gray-100">
-          <Button variant="ghost" className="w-full text-sm text-primary">
-            View all notifications
-          </Button>
-        </div>
-      </PopoverContent>
-    </Popover>
+          </>
+        )}
+      </AnimatePresence>
+    </div>
   );
 };
 

@@ -1,98 +1,120 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Trophy } from 'lucide-react';
 
-export const Partners = () => {
-  const partners = [
-    'Bank of Kigali',
-    'MTN Rwanda',
-    'Kigali Innovation City',
-    'AC Group',
-    'Inkomoko Entrepreneur Development',
-    'BK Tech House',
-    'Zipline Rwanda'
-  ];
+// Single marquee row
+function MarqueeRow({ partners, speed = 20, reverse = false }) {
+  // Duplicate the array to ensure a seamless effect
+  const fullPartners = [...partners, ...partners];
 
-  // Duplicate the array to create seamless loop
-  const duplicatedPartners = [...partners, ...partners];
+  // If reverse is true, we flip the direction
+  // We basically go from 0 to -100% for normal,
+  // and from -100% to 0 for reverse.
+  const animationProps = reverse
+    ? { x: ['-100%', '0%'] }
+    : { x: ['0%', '-100%'] };
 
   return (
-    <section className="relative bg-white py-20 border-b border-gray-100 overflow-hidden">
-      {/* Background gradient effects */}
-      <div className="absolute inset-0 bg-gradient-to-r from-white via-transparent to-white z-10 pointer-events-none" />
-      
-      <div className="container mx-auto px-4 mb-12">
-        <motion.p 
+    <div className="relative overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-r from-white via-transparent to-white pointer-events-none z-10" />
+      <motion.div
+        className="flex gap-8 py-4"
+        animate={animationProps}
+        transition={{
+          x: {
+            repeat: Infinity,
+            repeatType: 'loop',
+            duration: speed, // Adjust speed to taste
+            ease: 'linear',
+          },
+        }}
+      >
+        {fullPartners.map((partner, idx) => (
+          <motion.div
+            key={`${partner.name}-${idx}-${reverse ? 'reverse' : 'normal'}`}
+            whileHover={{ y: -5 }}
+            className="relative group"
+          >
+            <div className="w-60 bg-white rounded-2xl shadow-lg shadow-black/[0.03] border border-gray-100 
+                            flex flex-col items-center justify-center px-4 py-3
+                            hover:border-primary/20 transition-colors duration-300"
+            >
+              <span
+                className="text-lg font-semibold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text 
+                           text-transparent group-hover:from-primary group-hover:to-primary/80 
+                           transition-all duration-300 truncate w-full text-center group-hover:translate-y--3"
+                title={partner.name}
+              >
+                {partner.name}
+              </span>
+              <span
+                className="text-xs text-gray-500 mt-2 opacity-0 group-hover:opacity-100 
+                           transition-all duration-300 truncate w-full text-center absolute 
+                           transform translate-y-2 group-hover:translate-y-2"
+                title={partner.type}
+              >
+                {partner.type}
+              </span>
+            </div>
+          </motion.div>
+        ))}
+      </motion.div>
+    </div>
+  );
+}
+
+export function Partners() {
+  const partners = [
+    { name: 'Bank of Kigali', type: 'Financial Partner', logo: '/logos/bk.svg' },
+    { name: 'MTN Rwanda', type: 'Technology Partner', logo: '/logos/mtn.svg' },
+    { name: 'Kigali Innovation City', type: 'Innovation Hub', logo: '/logos/kic.svg' },
+    { name: 'AC Group', type: 'Technology Partner', logo: '/logos/ac.svg' },
+    { name: 'Inkomoko', type: 'Development Partner', logo: '/logos/inkomoko.svg' },
+    { name: 'BK Tech House', type: 'Technology Partner', logo: '/logos/bktech.svg' },
+    { name: 'Zipline Rwanda', type: 'Innovation Partner', logo: '/logos/zipline.svg' },
+  ];
+
+  return (
+    <section className="relative py-16 overflow-hidden">
+      {/* Gradient Background */}
+      <div className="absolute inset-0 bg-gradient-to-b from-gray-50 via-white to-white" />
+
+      {/* Animated Dots Pattern */}
+      <div 
+        className="absolute inset-0 opacity-[0.015]"
+        style={{
+          backgroundImage:
+            'radial-gradient(circle at center, currentColor 1px, transparent 1px)',
+          backgroundSize: '24px 24px',
+        }}
+      />
+
+      <div className="container mx-auto px-4 relative">
+        {/* Header */}
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="text-center text-sm font-semibold tracking-wider text-gray-500"
+          viewport={{ once: true }}
+          className="max-w-2xl mx-auto text-center mb-10"
         >
-          TRUSTED BY RWANDA'S LEADING ORGANIZATIONS
-        </motion.p>
-      </div>
+          <div className="inline-flex items-center gap-2 mb-4 p-1.5 pl-2 pr-3 rounded-full bg-primary/5 text-primary">
+            <Trophy className="w-4 h-4" />
+            <span className="text-sm font-medium">Trusted Partners</span>
+          </div>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600">
+            Backed by Rwanda's Leading Organizations
+          </h2>
+          <p className="text-gray-600 text-lg">
+            Collaborating with top institutions to drive innovation across East Africa
+          </p>
+        </motion.div>
 
-      {/* First Marquee - Left to Right */}
-      <div className="relative group">
-        <div className="absolute inset-0 bg-gradient-to-r from-white via-transparent to-white z-10" />
-        <div className="overflow-hidden relative">
-          <motion.div 
-            className="flex space-x-12 whitespace-nowrap"
-            animate={{ x: ["0%", "-50%"] }}
-            transition={{
-              x: {
-                repeat: Infinity,
-                repeatType: "loop",
-                duration: 20,
-                ease: "linear",
-              },
-            }}
-          >
-            {duplicatedPartners.map((partner, idx) => (
-              <div 
-                key={`${partner}-${idx}`}
-                className="inline-flex items-center justify-center group/item"
-              >
-                <span className="text-xl font-semibold bg-gradient-to-r from-gray-600 to-gray-400 bg-clip-text text-transparent group-hover/item:from-primary group-hover/item:to-primary/80 transition-all duration-300">
-                  {partner}
-                </span>
-              </div>
-            ))}
-          </motion.div>
+        {/* Marquee Rows */}
+        <div className="space-y-4">
+          <MarqueeRow partners={partners} speed={25} reverse={false} />
+          <MarqueeRow partners={partners} speed={18} reverse={true} />
         </div>
       </div>
-
-      {/* Second Marquee - Right to Left (Offset) */}
-      <div className="relative group mt-8">
-        <div className="absolute inset-0 bg-gradient-to-r from-white via-transparent to-white z-10" />
-        <div className="overflow-hidden relative">
-          <motion.div 
-            className="flex space-x-12 whitespace-nowrap"
-            animate={{ x: ["-50%", "0%"] }}
-            transition={{
-              x: {
-                repeat: Infinity,
-                repeatType: "loop",
-                duration: 15, // Slightly faster for visual interest
-                ease: "linear",
-              },
-            }}
-          >
-            {duplicatedPartners.map((partner, idx) => (
-              <div 
-                key={`${partner}-reverse-${idx}`}
-                className="inline-flex items-center justify-center group/item"
-              >
-                <span className="text-xl font-semibold bg-gradient-to-r from-gray-600 to-gray-400 bg-clip-text text-transparent group-hover/item:from-primary group-hover/item:to-primary/80 transition-all duration-300">
-                  {partner}
-                </span>
-              </div>
-            ))}
-          </motion.div>
-        </div>
-      </div>
-
-      {/* Pause on hover overlay */}
-      <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-white via-transparent to-white z-10" />
     </section>
   );
-};
+}

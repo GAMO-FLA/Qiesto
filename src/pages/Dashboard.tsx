@@ -1,29 +1,155 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { getCurrentUser, signOut } from '@/services/auth';
+import { signOut, getCurrentUser } from '@/services/auth';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { 
   LayoutDashboard, Users, Trophy, Settings, LogOut, Plus,
   ChevronRight, ChevronDown, Sparkles, TrendingUp, Activity,
-  Target, Search, Filter, Clock, Star, Building2, ArrowRight, Key, Bell, Mail, Shield
+  Target, Search, Filter, Clock, Star, Building2, ArrowRight, Key, Bell, Mail, Shield, Menu, X
 } from 'lucide-react';
 import { Switch } from "@/components/ui/switch";
 import NewChallengeModal from '@/components/dashboard/NewChallengeModal';
 import NotificationsDropdown from '@/components/dashboard/NotificationsDropdown';
 import { User } from '@/types/user';
-import { useAuth } from '@/contexts/AuthContext'
+import { useAuth } from '@/lib/auth';
+import { cn } from "@/lib/utils";
+import { useMediaQuery } from '@/hooks/useMediaQuery';
+import { supabase } from '@/lib/supabase';
+
+const ChallengeCard = ({ challenge, index }) => {
+  const isLargeScreen = useMediaQuery('(min-width: 1024px)');
+
+  return (
+    <motion.div
+      key={challenge.id}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ delay: index * 0.1 }}
+      className="group bg-gray-50 rounded-xl p-4 lg:p-6 hover:bg-gray-100 transition-all cursor-pointer"
+    >
+      <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between space-y-4 lg:space-y-0">
+        <div className="flex items-start space-x-4">
+          <div className="p-2 sm:p-3 bg-primary/10 rounded-xl flex-shrink-0">
+            <Trophy className="h-5 w-5 text-primary" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <h3 className="font-medium text-lg mb-1 group-hover:text-primary transition-colors truncate">
+              {challenge.title}
+            </h3>
+            <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+              {challenge.description}
+            </p>
+            <div className="flex flex-wrap gap-3 text-sm">
+              <div className="flex items-center text-gray-500 min-w-[140px]">
+                <Building2 className="h-4 w-4 mr-1 flex-shrink-0" />
+                <span className="truncate">{challenge.organization}</span>
+              </div>
+              <div className="flex items-center text-gray-500">
+                <Users className="h-4 w-4 mr-1 flex-shrink-0" />
+                <span>{challenge.participants} participants</span>
+              </div>
+              <div className="flex items-center text-gray-500">
+                <Clock className="h-4 w-4 mr-1 flex-shrink-0" />
+                <span>{challenge.daysLeft} days left</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="flex flex-row lg:flex-col items-center lg:items-end justify-between lg:justify-start space-y-0 lg:space-y-2 flex-shrink-0">
+          <Badge 
+            variant="secondary"
+            className={cn(
+              "rounded-lg px-3 py-1",
+              challenge.status === 'Active' 
+                ? 'bg-green-100 text-green-700' 
+                : 'bg-blue-100 text-blue-700'
+            )}
+          >
+            {challenge.status}
+          </Badge>
+          <p className="text-primary font-semibold">
+            {challenge.prize}
+          </p>
+        </div>
+      </div>
+      
+      <div className="mt-4 pt-4 border-t border-gray-200">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-4 flex-wrap">
+            <div>
+              <p className="text-sm text-gray-600">Submissions</p>
+              <p className="font-medium">{challenge.submissions}</p>
+            </div>
+            <div className="flex-1 min-w-[150px]">
+              <p className="text-sm text-gray-600">Progress</p>
+              <div className="w-full sm:w-32 h-2 bg-gray-200 rounded-full mt-1">
+                <div 
+                  className="h-full bg-primary rounded-full transition-all duration-300"
+                  style={{ width: `${challenge.progress}%` }}
+                />
+              </div>
+            </div>
+          </div>
+          <Button variant="ghost" className="text-primary w-full sm:w-auto justify-center">
+            View Details
+            <ChevronRight className="ml-2 h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
+const SearchAndFilter = ({ searchQuery, setSearchQuery, selectedFilter, setSelectedFilter }) => (
+  <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-4 w-full lg:w-auto">
+    <div className="relative w-full sm:w-64">
+      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+      <Input
+        placeholder="Search challenges..."
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        className="pl-10 w-full"
+      />
+    </div>
+    
+    <select
+      value={selectedFilter}
+      onChange={(e) => setSelectedFilter(e.target.value)}
+      className="w-full sm:w-auto border border-gray-200 rounded-lg px-3 py-2 text-sm"
+    >
+      <option value="all">All Status</option>
+      <option value="active">Active</option>
+      <option value="upcoming">Upcoming</option>
+      <option value="completed">Completed</option>
+    </select>
+  </div>
+);
+
+const useChallenges = (allChallenges, searchQuery, selectedFilter) => {
+  return useMemo(() => {
+    return allChallenges.filter(challenge => {
+      const matchesSearch = challenge.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          challenge.organization.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesFilter = selectedFilter === 'all' || challenge.status.toLowerCase() === selectedFilter;
+      return matchesSearch && matchesFilter;
+    });
+  }, [allChallenges, searchQuery, selectedFilter]);
+};
 
 const Dashboard = () => {
-  const { user, loading } = useAuth() as { user: User | null, loading: boolean };
+  const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [activeView, setActiveView] = useState('overview');
   const [showAllChallenges, setShowAllChallenges] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('all');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
 
   if (loading) {
     return <div>Loading...</div>;
@@ -108,24 +234,6 @@ const Dashboard = () => {
     }
   ];
 
-  // Challenge data
-  const allChallenges = [
-    {
-      id: '1',
-      title: "Rwanda Tech Innovation Challenge",
-      description: "Develop solutions for digital transformation in Rwanda",
-      organization: "Rwanda ICT Chamber",
-      participants: 450,
-      status: "Active",
-      submissions: 125,
-      progress: 65,
-      daysLeft: 14,
-      prize: "$50,000",
-      deadline: "2024-05-15"
-    },
-    // ... more challenges
-  ];
-
   const teams = [
     {
       id: '1',
@@ -150,24 +258,28 @@ const Dashboard = () => {
     }
   ];
 
-  const filteredChallenges = allChallenges
-    .filter(challenge => {
-      const matchesSearch = challenge.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          challenge.organization.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesFilter = selectedFilter === 'all' || challenge.status.toLowerCase() === selectedFilter;
-      return matchesSearch && matchesFilter;
-    });
-
-  const displayedChallenges = showAllChallenges ? filteredChallenges : filteredChallenges.slice(0, 3);
-
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-      navigate('/signin');
-    } catch (error) {
-      toast.error('Error signing out');
-    }
-  };
+  const StatsCard = ({ stat, index }) => (
+    <motion.div
+      key={stat.label}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.1 }}
+      className="bg-white rounded-xl p-4 lg:p-6 shadow-sm hover:shadow-md transition-all"
+    >
+      <div className="flex items-center justify-between mb-4">
+        <div className={`p-2 sm:p-3 rounded-xl ${stat.bg}`}>
+          <stat.icon className={`h-5 w-5 sm:h-6 sm:w-6 ${stat.color}`} />
+        </div>
+        <TrendingUp className="h-4 w-4 text-green-500" />
+      </div>
+      <p className="text-gray-600 text-xs sm:text-sm mb-1">{stat.label}</p>
+      <p className="text-2xl sm:text-3xl font-bold mb-2">{stat.value}</p>
+      <p className="text-green-500 text-xs sm:text-sm flex items-center">
+        <Activity className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+        {stat.change}
+      </p>
+    </motion.div>
+  );
 
   const renderMainContent = () => {
     switch (activeView) {
@@ -204,82 +316,7 @@ const Dashboard = () => {
 
             <div className="grid gap-4">
               {filteredChallenges.map((challenge, index) => (
-                <motion.div
-                  key={challenge.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ delay: index * 0.1 }}
-                  className="group bg-gray-50 rounded-xl p-6 hover:bg-gray-100 transition-all cursor-pointer"
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-start space-x-4">
-                      <div className="p-3 bg-primary/10 rounded-xl">
-                        <Trophy className="h-5 w-5 text-primary" />
-                      </div>
-                      <div>
-                        <h3 className="font-medium text-lg mb-1 group-hover:text-primary transition-colors">
-                          {challenge.title}
-                        </h3>
-                        <p className="text-gray-600 text-sm mb-3">
-                          {challenge.description}
-                        </p>
-                        <div className="flex items-center space-x-4 text-sm">
-                          <div className="flex items-center text-gray-500">
-                            <Building2 className="h-4 w-4 mr-1" />
-                            {challenge.organization}
-                          </div>
-                          <div className="flex items-center text-gray-500">
-                            <Users className="h-4 w-4 mr-1" />
-                            {challenge.participants} participants
-                          </div>
-                          <div className="flex items-center text-gray-500">
-                            <Clock className="h-4 w-4 mr-1" />
-                            {challenge.daysLeft} days left
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex flex-col items-end space-y-2">
-                      <Badge 
-                        variant="secondary"
-                        className={`${
-                          challenge.status === 'Active' 
-                            ? 'bg-green-100 text-green-700' 
-                            : 'bg-blue-100 text-blue-700'
-                        } rounded-lg px-3 py-1`}
-                      >
-                        {challenge.status}
-                      </Badge>
-                      <p className="text-primary font-semibold">
-                        {challenge.prize}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="mt-4 pt-4 border-t border-gray-200">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-4">
-                        <div>
-                          <p className="text-sm text-gray-600">Submissions</p>
-                          <p className="font-medium">{challenge.submissions}</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-600">Progress</p>
-                          <div className="w-32 h-2 bg-gray-200 rounded-full mt-1">
-                            <div 
-                              className="h-full bg-primary rounded-full"
-                              style={{ width: `${challenge.progress}%` }}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                      <Button variant="ghost" className="text-primary">
-                        View Details
-                        <ChevronRight className="ml-2 h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </motion.div>
+                <ChallengeCard key={challenge.id} challenge={challenge} index={index} />
               ))}
             </div>
 
@@ -442,80 +479,65 @@ const Dashboard = () => {
 
       default:
         return (
-          <>
-            {/* Header */}
-            <div className="flex items-center justify-between mb-8">
-              <div>
+          <>          
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8 space-y-6 lg:space-y-0 p-2 lg:p-1">
+            <div className="flex-1 lg:flex lg:items-center lg:justify-between gap-8">
+              <div className="lg:flex lg:items-center lg:space-x-8 mb-6 lg:mb-0" >
                 <motion.div
                   initial={{ opacity: 0, y: -20 }}
                   animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, ease: "easeOut" }}
+                  className="space-y-3 p-2 lg:p-4"
                 >
-                  <h1 className="text-3xl font-bold mb-2">
+                  <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight">
                     Welcome back, {user?.fullName || 'Admin'}
                   </h1>
-                  <p className="text-gray-600">
+                  <p className="text-gray-600 text-sm md:text-base lg:text-lg">
                     Here's what's happening with your challenges
                   </p>
                 </motion.div>
               </div>
-              <div className="flex items-center space-x-4">
+              
+              <div className="flex items-center space-x-4 w-full lg:w-auto">
                 <NotificationsDropdown />
                 <Link to="/challenges" className="hover:no-underline">
-                  <Button className="bg-primary text-white rounded-xl hover:bg-primary/90 transition-colors">
+                  <Button 
+                    className="bg-primary text-white rounded-xl hover:bg-primary/90 transition-colors"
+                    variant="default"
+                  >
                     <Plus className="mr-2 h-5 w-5" />
-                    Browse Challenges
+                    <span className="hidden sm:inline">Browse Challenges</span>
+                    <span className="sm:hidden">Browse</span>
                   </Button>
                 </Link>
               </div>
             </div>
+          </div>
 
-            {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8">
               {stats.map((stat, index) => (
-                <motion.div
-                  key={stat.label}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-all"
-                >
-                  <div className="flex items-center justify-between mb-4">
-                    <div className={`p-3 rounded-xl ${stat.bg}`}>
-                      <stat.icon className={`h-6 w-6 ${stat.color}`} />
-                    </div>
-                    <TrendingUp className="h-4 w-4 text-green-500" />
-                  </div>
-                  <p className="text-gray-600 text-sm mb-1">{stat.label}</p>
-                  <p className="text-3xl font-bold mb-2">{stat.value}</p>
-                  <p className="text-green-500 text-sm flex items-center">
-                    <Activity className="h-4 w-4 mr-1" />
-                    {stat.change}
-                  </p>
-                </motion.div>
+                <StatsCard key={stat.label} stat={stat} index={index} />
               ))}
             </div>
 
-            {/* Challenges Section */}
-            <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
-              <div className="flex items-center justify-between mb-6">
+            <div className="bg-white rounded-xl shadow-sm p-4 lg:p-6 mb-8">
+              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6 space-y-4 lg:space-y-0">
                 <h2 className="text-xl font-semibold">Your Challenges</h2>
-                <div className="flex items-center space-x-4">
-                  {/* Search */}
-                  <div className="relative">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-4">
+                  <div className="relative w-full sm:w-64">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                     <Input
                       placeholder="Search challenges..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-10 w-64"
+                      className="pl-10 w-full"
                     />
                   </div>
                   
-                  {/* Filter */}
                   <select
                     value={selectedFilter}
                     onChange={(e) => setSelectedFilter(e.target.value)}
-                    className="border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                    className="w-full sm:w-auto border border-gray-200 rounded-lg px-3 py-2 text-sm"
                   >
                     <option value="all">All Status</option>
                     <option value="active">Active</option>
@@ -525,86 +547,10 @@ const Dashboard = () => {
                 </div>
               </div>
 
-              {/* Challenges List */}
               <div className="space-y-4">
                 <AnimatePresence>
                   {displayedChallenges.map((challenge, index) => (
-                    <motion.div
-                      key={challenge.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -20 }}
-                      transition={{ delay: index * 0.1 }}
-                      className="group bg-gray-50 rounded-xl p-6 hover:bg-gray-100 transition-all cursor-pointer"
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-start space-x-4">
-                          <div className="p-3 bg-primary/10 rounded-xl">
-                            <Trophy className="h-5 w-5 text-primary" />
-                          </div>
-                          <div>
-                            <h3 className="font-medium text-lg mb-1 group-hover:text-primary transition-colors">
-                              {challenge.title}
-                            </h3>
-                            <p className="text-gray-600 text-sm mb-3">
-                              {challenge.description}
-                            </p>
-                            <div className="flex items-center space-x-4 text-sm">
-                              <div className="flex items-center text-gray-500">
-                                <Building2 className="h-4 w-4 mr-1" />
-                                {challenge.organization}
-                              </div>
-                              <div className="flex items-center text-gray-500">
-                                <Users className="h-4 w-4 mr-1" />
-                                {challenge.participants} participants
-                              </div>
-                              <div className="flex items-center text-gray-500">
-                                <Clock className="h-4 w-4 mr-1" />
-                                {challenge.daysLeft} days left
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex flex-col items-end space-y-2">
-                          <Badge 
-                            variant="secondary"
-                            className={`${
-                              challenge.status === 'Active' 
-                                ? 'bg-green-100 text-green-700' 
-                                : 'bg-blue-100 text-blue-700'
-                            } rounded-lg px-3 py-1`}
-                          >
-                            {challenge.status}
-                          </Badge>
-                          <p className="text-primary font-semibold">
-                            {challenge.prize}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="mt-4 pt-4 border-t border-gray-200">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-4">
-                            <div>
-                              <p className="text-sm text-gray-600">Submissions</p>
-                              <p className="font-medium">{challenge.submissions}</p>
-                            </div>
-                            <div>
-                              <p className="text-sm text-gray-600">Progress</p>
-                              <div className="w-32 h-2 bg-gray-200 rounded-full mt-1">
-                                <div 
-                                  className="h-full bg-primary rounded-full"
-                                  style={{ width: `${challenge.progress}%` }}
-                                />
-                              </div>
-                            </div>
-                          </div>
-                          <Button variant="ghost" className="text-primary">
-                            View Details
-                            <ChevronRight className="ml-2 h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    </motion.div>
+                    <ChallengeCard key={challenge.id} challenge={challenge} index={index} />
                   ))}
                 </AnimatePresence>
               </div>
@@ -629,8 +575,26 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-50/50">
-      {/* Sidebar */}
-      <aside className="fixed left-0 top-0 h-screen w-72 bg-white border-r border-gray-200 z-50">
+      {isMobileMenuOpen && (
+        <div 
+          className="lg:hidden fixed inset-0 bg-black/50 z-40"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
+      <aside className={cn(
+        "fixed left-0 top-0 h-screen bg-white border-r border-gray-200 z-50",
+        "w-72 transition-transform duration-200 ease-in-out",
+        "lg:translate-x-0",
+        isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+      )}>
+        <button
+          onClick={() => setIsMobileMenuOpen(false)}
+          className="lg:hidden absolute top-4 right-4 p-2 rounded-lg hover:bg-gray-100"
+        >
+          <X className="h-6 w-6 text-gray-600" />
+        </button>
+
         <div className="flex flex-col h-full">
           <div className="p-6 border-b border-gray-100">
             <Link to="/" className="flex items-center space-x-2">
@@ -716,10 +680,19 @@ const Dashboard = () => {
                   <p className="text-sm text-gray-500">{user?.email}</p>
                 </div>
               </div>
-              <Button 
-                variant="ghost" 
-                className="w-full justify-start text-gray-600 hover:text-red-600 hover:bg-red-50"
-                onClick={handleSignOut}
+              <Button
+                onClick={async () => {
+                  try {
+                    await signOut();
+                    toast.success('Signed out successfully');
+                    navigate('/');
+                  } catch (error) {
+                    console.error('Logout error:', error);
+                    toast.error('Error signing out');
+                  }
+                }}
+                variant="ghost"
+                className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
               >
                 <LogOut className="mr-2 h-4 w-4" />
                 Sign Out
@@ -728,11 +701,15 @@ const Dashboard = () => {
           </div>
         </div>
       </aside>
-
-      {/* Main Content */}
-      <main className="ml-72 p-8">
-        {renderMainContent()}
-      </main>
+        <main className={cn(
+          "transition-all duration-200 ease-in-out",
+          "lg:ml-72 px-4 sm:px-6 lg:px-8",
+          "pt-16 sm:pt-20 pb-12" // Reduced from pt-20 sm:pt-24
+        )}>
+          <div className="max-w-7xl mx-auto space-y-4"> {/* Reduced from space-y-6 */}
+            {renderMainContent()}
+          </div>
+        </main>
     </div>
   );
 };

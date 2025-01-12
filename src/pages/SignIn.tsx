@@ -3,7 +3,8 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Link, useNavigate } from 'react-router-dom';
-import { signIn, signOut } from '@/services/auth';
+import { signIn } from '@/services/auth';
+import { useAuth } from '@/lib/auth';
 import { toast } from 'sonner';
 import { Sparkles, Mail, Lock, ArrowRight } from 'lucide-react';
 import { set } from 'date-fns';
@@ -18,10 +19,17 @@ const SignIn = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError('');
 
     try {
+      console.log('Attempting sign in...');
       const { user } = await signIn({ email, password });
+      console.log('Sign in successful, user:', user);
       
+      if (!user) {
+        throw new Error('No user returned from sign in');
+      }
+
       if (user.role === 'partner') {
         if (user.status === 'pending') {
           navigate('/partner-pending');
@@ -31,12 +39,15 @@ const SignIn = () => {
       } else {
         navigate('/dashboard');
       }
-    } catch (error) {
-      setError('Invalid email or password'); 
+    } catch (error: unknown) {
       console.error('Sign in error:', error);
-      toast.error('Invalid email or password');
+      const message = error instanceof Error ? error.message : 'Invalid email or password';
+      setError(message);
+      toast.error(message);
     } finally {
-      setIsLoading(false);
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 0);
     }
   };
 
