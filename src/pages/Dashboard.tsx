@@ -18,7 +18,6 @@ import { User } from '@/types/user';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from "@/lib/utils";
 import { useMediaQuery } from '@/hooks/useMediaQuery';
-import { supabase } from '@/lib/supabase';
 
 const ChallengeCard = ({ challenge, index }) => {
   const isLargeScreen = useMediaQuery('(min-width: 1024px)');
