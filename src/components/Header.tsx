@@ -49,7 +49,7 @@ export const Header = () => {
 
   return (
     <motion.header
-      initial={{ y: -100 }}
+      initial={{ y: 0 }}
       animate={{ y: 0 }}
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
       className="fixed top-0 left-0 right-0 z-[100]"
@@ -85,7 +85,8 @@ export const Header = () => {
               </motion.span>
             </Link>
 
-            {/* Desktop Navigation */}
+            {/* Navigation Items */}
+            
             <nav className="hidden md:flex items-center space-x-2">
               {navItems.map((item) => (
                 <Link 
@@ -106,6 +107,7 @@ export const Header = () => {
                 </Link>
               ))}
             </nav>
+            
           </div>
 
           {/* Mobile Menu Button */}
@@ -170,13 +172,14 @@ export const Header = () => {
                       Settings
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
+                    {isLoggedIn && (
                     <DropdownMenuItem 
-                      onClick={handleLogout}
-                      className="text-red-600 rounded-lg cursor-pointer hover:bg-red-50 hover:text-red-700"
-                    >
-                      <LogOut className="mr-2 h-4 w-4" />
-                      Sign out
-                    </DropdownMenuItem>
+                    onClick={() => handleLogout()}
+                    className="rounded-lg cursor-pointer"
+                  >
+                    Log Out
+                  </DropdownMenuItem>  
+                    )}
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
