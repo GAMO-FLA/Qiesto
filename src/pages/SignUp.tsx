@@ -96,7 +96,7 @@ const SignUp = () => {
       };
 
       console.log('Starting signup process...');
-      const { user } = await signUp(credentials);
+      const user = await signUp(credentials);
       
       if (!user) {
         throw new Error('Sign up failed - no user returned');
@@ -107,7 +107,7 @@ const SignUp = () => {
 
       // Add delay before navigation
       setTimeout(() => {
-        const destination = user.role === 'partner' ? '/partner-pending' : '/dashboard';
+        const destination = user.userType === 'partner' ? '/partner-pending' : '/dashboard';
         console.log('Navigating to:', destination);
         navigate(destination);
       }, 100);

@@ -5,7 +5,7 @@ import { getCurrentUser } from '@/services/auth';
 import { User } from '@/types/user';
 
 export interface AuthUser extends User {
-  userType?: 'partner' | 'participant';
+  userType: 'partner' | 'participant';
   status?: 'pending' | 'approved';
   fullName?: string;
   role?: 'partner' | 'participant';
@@ -28,7 +28,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       if (firebaseUser) {
         try {
-          const currentUser = await getCurrentUser();
+          const currentUser = await getCurrentUser() as AuthUser;
           setUser(currentUser);
         } catch (error) {
           console.error('Profile fetch error:', error);

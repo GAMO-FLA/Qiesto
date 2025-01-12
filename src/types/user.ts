@@ -10,7 +10,7 @@ export interface User extends SupabaseUser {
   email: string;
   fullName?: string;
   userType: 'partner' | 'participant';
-  status?: 'pending' | 'active';
+  status?: 'pending' | 'approved';
   organization?: Organization;
   createdAt?: string;
 }

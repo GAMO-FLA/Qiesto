@@ -1,7 +1,8 @@
 import { auth, db } from '@/lib/firebase';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut as firebaseSignOut } from 'firebase/auth';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut as firebaseSignOut, Auth } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { User } from '@/types/user';
+import { AuthUser } from '@/contexts/AuthContext';
 
 export type SignInCredentials = {
   email: string;
@@ -42,7 +43,7 @@ export const signUp = async ({ email, password, fullName, userType, organization
       ...(organization && { organization }),
       ...(position && { position }),
     });
-    return user;
+    return { ...user, userType };
   } catch (error) {
     console.error('SignUp error:', error);
     throw error;
@@ -63,7 +64,15 @@ export const getCurrentUser = async (): Promise<User | null> => {
   if (!user) return null;
   const userDoc = await getDoc(doc(db, 'profiles', user.uid));
   const profile = userDoc.data();
-  return { ...user, fullName: profile?.full_name, role: profile?.user_type || 'participant', status: profile?.status || 'pending' } as User;
+  return {
+    id: user.uid,
+    email: user.email || '',
+    fullName: profile?.full_name,
+    userType: profile?.user_type || 'participant',
+    status: profile?.status || 'pending',
+    organization: profile?.organization,
+    createdAt: user.metadata.creationTime,
+  } as User;
 };
 
 export const isAuthenticated = async (): Promise<boolean> => {

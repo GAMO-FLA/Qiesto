@@ -17,7 +17,7 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
     return <Navigate to="/signin" />;
   }
 
-  if (!allowedRoles.includes(user.role || '')) {
+  if (!allowedRoles.includes(user.userType || '')) {
     return <Navigate to="/" />;
   }
 
