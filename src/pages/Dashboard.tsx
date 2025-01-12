@@ -15,7 +15,7 @@ import { Switch } from "@/components/ui/switch";
 import NewChallengeModal from '@/components/dashboard/NewChallengeModal';
 import NotificationsDropdown from '@/components/dashboard/NotificationsDropdown';
 import { User } from '@/types/user';
-import { useAuth } from '@/lib/auth';
+import { useAuth } from '@/contexts/AuthContext';
 import { cn } from "@/lib/utils";
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { supabase } from '@/lib/supabase';
