@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Link, useNavigate } from 'react-router-dom';
 import { signIn } from '@/services/auth';
-import { useAuth } from '@/lib/auth';
 import { toast } from 'sonner';
 import { Sparkles, Mail, Lock, ArrowRight } from 'lucide-react';
 import { set } from 'date-fns';
@@ -52,15 +51,15 @@ const SignIn = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50/50 grid lg:grid-cols-2">
+    <div className="h-screen bg-gray-50/50 grid lg:grid-cols-2 overflow-hidden">
       {/* Left Side - Form */}
-      <div className="relative flex items-center justify-center p-8">
+      <div className="relative flex items-center justify-center p-8 overflow-y-auto">
         <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent" />
         
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="w-full max-w-md z-10"
+          className="w-full max-w-md z-10 my-auto"
         >
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2 mb-12">
