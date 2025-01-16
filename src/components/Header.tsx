@@ -48,6 +48,68 @@ export const Header = () => {
     }
   };
 
+  const ProfileMenu = ({ user }) => {
+    const navigate = useNavigate();
+
+    const handleDashboardClick = () => {
+      // Check if user is a partner and navigate accordingly
+      if (user?.role === 'partner') {
+        navigate('/partner-dashboard');
+      } else {
+        navigate('/dashboard');
+      }
+    };
+
+    return (
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <motion.div whileHover={{ scale: 1.02 }}>
+            <Button
+              variant="ghost"
+              className="rounded-xl hover:bg-primary/5 border border-gray-200/50 shadow-sm pl-2 pr-3"
+            >
+              <div className="flex items-center space-x-2">
+                <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary/10 to-blue-500/10 flex items-center justify-center">
+                  <User className="h-4 w-4 text-primary" />
+                </div>
+                <ChevronDown className="h-4 w-4 text-gray-400 transition-transform duration-200 group-hover:rotate-180" />
+              </div>
+            </Button>
+          </motion.div>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent 
+          align="end" 
+          className="w-56 p-2 bg-white/80 backdrop-blur-xl border border-gray-200/50"
+        >
+          <div className="px-2 py-1.5 border-b border-gray-100">
+            <p className="text-sm font-medium">{user.fullName}</p>
+            <p className="text-xs text-gray-500">{user.email}</p>
+          </div>
+          <DropdownMenuItem onClick={handleDashboardClick}>
+            <LayoutDashboard className="w-4 h-4 mr-2" />
+            Dashboard
+          </DropdownMenuItem>
+          <DropdownMenuItem 
+            onClick={() => navigate('/dashboard?view=settings')}
+            className="rounded-lg cursor-pointer"
+          >
+            <Settings className="mr-2 h-4 w-4" />
+            Settings
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          
+          <DropdownMenuItem 
+            onClick={() => handleLogout()}
+            className="rounded-lg cursor-pointer"
+          >
+            Log Out
+          </DropdownMenuItem>  
+          
+        </DropdownMenuContent>
+      </DropdownMenu>
+    );
+  };
+
   return (
     <motion.header
       initial={{ y: 0 }}
@@ -134,55 +196,7 @@ export const Header = () => {
                   </Button>
                 </motion.div>
 
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <motion.div whileHover={{ scale: 1.02 }}>
-                      <Button
-                        variant="ghost"
-                        className="rounded-xl hover:bg-primary/5 border border-gray-200/50 shadow-sm pl-2 pr-3"
-                      >
-                        <div className="flex items-center space-x-2">
-                          <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary/10 to-blue-500/10 flex items-center justify-center">
-                            <User className="h-4 w-4 text-primary" />
-                          </div>
-                          <ChevronDown className="h-4 w-4 text-gray-400 transition-transform duration-200 group-hover:rotate-180" />
-                        </div>
-                      </Button>
-                    </motion.div>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent 
-                    align="end" 
-                    className="w-56 p-2 bg-white/80 backdrop-blur-xl border border-gray-200/50"
-                  >
-                    <div className="px-2 py-1.5 border-b border-gray-100">
-                      <p className="text-sm font-medium">{user.fullName}</p>
-                      <p className="text-xs text-gray-500">{user.email}</p>
-                    </div>
-                    <DropdownMenuItem 
-                      onClick={() => navigate('/dashboard')}
-                      className="rounded-lg cursor-pointer"
-                    >
-                      <LayoutDashboard className="mr-2 h-4 w-4" />
-                      Dashboard
-                    </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      onClick={() => navigate('/dashboard?view=settings')}
-                      className="rounded-lg cursor-pointer"
-                    >
-                      <Settings className="mr-2 h-4 w-4" />
-                      Settings
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    
-                    <DropdownMenuItem 
-                    onClick={() => handleLogout()}
-                    className="rounded-lg cursor-pointer"
-                  >
-                    Log Out
-                  </DropdownMenuItem>  
-                    
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                <ProfileMenu user={user} />
               </div>
             ) : (
               <AnimatePresence>

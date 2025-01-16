@@ -175,29 +175,6 @@ const SignIn = () => {
               </Link>
             </p>
           </form>
-          <p className="text-left text-sm text-gray-600" style={{marginTop: '20px'}}>
-          <b>Test credentials:</b>
-          <br />
-          Participant: 
-          <br />
-          email: participant@qiesta.com
-          <br />
-          password: Asdfgh12345!
-          <br />
-          <br />
-          Partner (Pending):
-          <br />
-          email: partner-pending@qiesta.com
-          <br />
-          password: Asdfgh12345!
-          <br />
-          <br />
-          Partner (Approved):
-          <br />
-          email: partner-approved@qiesta.com
-          <br />
-          password: Asdfgh12345!
-          </p>
         </motion.div>
       </div>
 
