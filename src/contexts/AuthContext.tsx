@@ -3,8 +3,11 @@ import { auth } from '@/lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { getCurrentUser } from '@/services/auth';
 import { User } from '@/types/user';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 export interface AuthUser extends User {
+  uid: any;
   userType: 'partner' | 'participant';
   status?: 'pending' | 'approved';
   fullName?: string;
@@ -23,30 +26,53 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    console.log("AuthProvider mounted");
+    
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      console.log('Auth state change:', firebaseUser);
+      console.log('Auth state changed:', { firebaseUser });
+      
+      try {
+        if (firebaseUser) {
+          const docRef = doc(db, 'profiles', firebaseUser.uid);
+          const docSnap = await getDoc(docRef);
+          const profileData = docSnap.data();
+          
+          console.log('Profile data:', profileData);
 
-      if (firebaseUser) {
-        try {
-          const currentUser = await getCurrentUser() as AuthUser;
-          setUser(currentUser);
-        } catch (error) {
-          console.error('Profile fetch error:', error);
+          const authUser: AuthUser = {
+            uid: firebaseUser.uid,
+            email: firebaseUser.email || '',
+            id: firebaseUser.uid,
+            userType: profileData?.user_type || 'partner',
+            status: profileData?.status,
+            fullName: profileData?.full_name,
+            aud: '',
+            created_at: '',
+            app_metadata: {},
+            user_metadata: {},
+            role: profileData?.user_type || 'partner'
+          };
+
+          setUser(authUser);
+        } else {
           setUser(null);
         }
-      } else {
+      } catch (error) {
+        console.error('Auth error:', error);
         setUser(null);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     });
 
-    return () => {
-      unsubscribe();
-    };
+    return () => unsubscribe();
   }, []);
 
+  const value = { user, loading };
+  console.log("AuthProvider state:", value);
+
   return (
-    <AuthContext.Provider value={{ user, loading }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
@@ -57,5 +83,5 @@ export const useAuth = () => {
   if (!context) {
     throw new Error('useAuth must be used within AuthProvider');
   }
-  return context as AuthContextType;
+  return context;
 };

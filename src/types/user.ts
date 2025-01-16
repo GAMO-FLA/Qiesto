@@ -12,6 +12,7 @@ export interface User extends SupabaseUser {
   userType: 'partner' | 'participant';
   status?: 'pending' | 'approved';
   organization?: Organization;
+  position?: string;
   createdAt?: string;
 }
 
