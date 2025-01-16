@@ -243,7 +243,7 @@ const WelcomeSection = ({ user }) => (
       className="space-y-2"
     >
       <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight">
-        Welcome {user?.fullName || 'Admin'} !
+        Welcome {user?.fullName || 'Admin'}!
       </h1>
       <p className="text-gray-600 text-sm lg:text-base">
         Here's what's happening with your challenges

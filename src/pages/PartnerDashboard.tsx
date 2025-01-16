@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Navigate, Link } from 'react-router-dom';
 import { 
   LayoutDashboard, FileText, Users, Settings, LogOut, Plus,
   ChevronRight, Sparkles, TrendingUp, Activity, Search,
@@ -20,6 +20,7 @@ import { LucideIcon } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { OverviewView } from '@/components/partner-dashboard/OverviewView';
 import { Switch } from "@/components/ui/switch";
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Stat {
   label: string;
@@ -283,6 +284,24 @@ const Header = ({ user, onSignOut }: HeaderProps) => (
   </div>
 );
 
+const WelcomeSection = ({ user }) => (
+  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 lg:gap-8 mb-6">
+    <motion.div
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+      className="space-y-2"
+    >
+      <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight">
+        Welcome {user?.fullName || 'Admin'}!
+      </h1>
+      <p className="text-gray-600 text-sm lg:text-base">
+        Here's what's happening with your challenges
+      </p>
+    </motion.div>
+  </div>
+);
+
 const SearchBar = ({ searchQuery, setSearchQuery, selectedFilter, setSelectedFilter }: SearchBarProps) => (
   <div className="flex flex-col sm:flex-row gap-4 mb-6">
     <div className="relative flex-1">
@@ -322,13 +341,30 @@ const NewChallengeForm = ({ challenge, setChallenge, onSubmit, onClose }: NewCha
   );
 };
 
+const LoadingScreen = () => (
+  <div className="min-h-screen bg-gray-50/50 flex items-center justify-center px-4">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="flex flex-col items-center text-center"
+    >
+      <div className="relative mb-4">
+        <div className="h-12 w-12 rounded-full border-4 border-primary/30 border-t-primary animate-spin" />
+        <Sparkles className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-5 w-5 text-primary" />
+      </div>
+      <h2 className="text-xl font-semibold mb-2">Loading your dashboard</h2>
+      <p className="text-sm text-gray-500">Please wait while we fetch your data...</p>
+    </motion.div>
+  </div>
+);
+
 const PartnerDashboard = () => {
   const [activeView, setActiveView] = useState('overview');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('all');
   const [showNewChallengeModal, setShowNewChallengeModal] = useState(false);
   const navigate = useNavigate();
-  //const [user, setUser] = useState<User | null>(null);
+  const { user: authUser, loading } = useAuth();
   const user: User = {
     id: '1',
     fullName: 'John Doe',
@@ -495,11 +531,20 @@ const PartnerDashboard = () => {
     },
   ];
 
+  if (loading) {
+      return <LoadingScreen />;
+    }
+  
+    if (!authUser) {
+      return <Navigate to="/signin" />;
+    }
+
   const renderMainContent = () => {
     switch (activeView) {
       case 'overview':
         return (
           <div className="space-y-6">
+            <WelcomeSection user={authUser} />
             {/* Stats Grid */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
               {stats.map((stat, index) => (
@@ -1158,15 +1203,28 @@ const PartnerDashboard = () => {
             </div>
           </nav>
 
-          <div className="sticky bottom-0 left-0 right-0 p-4 border-t border-gray-100 bg-white">
-            <Button
-              variant="ghost"
-              className="w-full justify-start text-gray-600 hover:text-red-600 hover:bg-red-50"
-              onClick={handleSignOut}
-            >
-              <LogOut className="mr-2 h-5 w-5" />
-              Sign Out
-            </Button>
+          <div className="p-4 border-t border-gray-100">
+            <div className="bg-gray-50 rounded-xl p-4 mb-4">
+              <div className="flex items-center space-x-3 mb-3">
+                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                  <span className="text-primary font-semibold">
+                    {authUser?.fullName?.[0] || 'A'}
+                  </span>
+                </div>
+                <div>
+                  <p className="font-medium">{authUser?.fullName || 'Admin User'}</p>
+                  <p className="text-sm text-gray-500">{authUser?.email}</p>
+                </div>
+              </div>
+              <Button
+                onClick={handleSignOut}
+                variant="ghost"
+                className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                Sign Out
+              </Button>
+            </div>
           </div>
         </div>
       </aside>

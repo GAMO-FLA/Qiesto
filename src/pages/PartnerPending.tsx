@@ -7,6 +7,7 @@ import {
   ArrowRight, Shield, Users, Trophy 
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { signOut } from '@/services/auth';
 
 const steps = [
   {
@@ -48,6 +49,15 @@ const benefits = [
 ];
 
 const PartnerPending = () => {
+
+  const handleLogOut = async () => {
+    try {
+      await signOut();
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
+
   return (
     <div className="min-h-screen grid lg:grid-cols-2">
       {/* Left Side */}
@@ -111,7 +121,9 @@ const PartnerPending = () => {
 
             <div className="pt-6 border-t">
               <Link to="/">
-                <Button variant="outline" className="w-full group">
+                <Button variant="outline" className="w-full group"
+                onClick={() => handleLogOut()}
+                >
                   <ArrowLeft className="mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform" />
                   Return to Home
                 </Button>
