@@ -1,362 +1,28 @@
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState } from 'react';
 import { useNavigate, Navigate, Link } from 'react-router-dom';
+import { signOut } from '@/services/auth';
 import { 
   LayoutDashboard, FileText, Users, Settings, LogOut, Plus,
-  ChevronRight, Sparkles, TrendingUp, Activity, Search,
-  Trophy, DollarSign, Award, Download, Filter, InboxIcon,
-  LayoutGrid, List, Github, Eye, CheckCircle
+  ChevronRight, Sparkles, Search,
+  Trophy, DollarSign, Award, Download, Filter, InboxIcon, Eye, CheckCircle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from 'sonner';
 import { cn } from "@/lib/utils";
-import { User, Challenge } from '@/types/user';
-import NotificationsDropdown from '@/components/dashboard/NotificationsDropdown';
-import { SettingsView } from '@/components/partner-dashboard/SettingsView';
-import { LucideIcon } from 'lucide-react';
+import { User } from '@/types/user';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { OverviewView } from '@/components/partner-dashboard/OverviewView';
 import { Switch } from "@/components/ui/switch";
 import { useAuth } from '@/contexts/AuthContext';
-
-interface Stat {
-  label: string;
-  value: string;
-  change: string;
-  icon: LucideIcon;
-  bg: string;
-  color: string;
-}
-
-interface MobileTabNavProps {
-  activeView: string;
-  setActiveView: (view: string) => void;
-}
-
-interface ProfileDropdownProps {
-  user: User;
-  onSignOut: () => void;
-}
-
-interface HeaderProps {
-  user: User;
-  onSignOut: () => void;
-}
-
-interface ChallengeCardProps {
-  challenge: Challenge;
-  index: number;
-}
-
-interface StatsCardProps {
-  stat: Stat;
-  index: number;
-}
-
-interface SearchBarProps {
-  searchQuery: string;
-  setSearchQuery: (query: string) => void;
-  selectedFilter: string;
-  setSelectedFilter: (filter: string) => void;
-}
-
-interface NewChallengeFormProps {
-  challenge: {
-    title: string;
-    description: string;
-    prize: string;
-    deadline: string;
-    requirements: string;
-    categories: string;
-    status: string;
-    maxParticipants: string;
-    submissionFormat: string;
-    evaluationCriteria: string;
-    termsAndConditions: string;
-  };
-  setChallenge: (challenge: any) => void;
-  onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
-  onClose: () => void;
-}
-
-interface Submission {
-  id: string;
-  title: string;
-  githubUrl?: string;
-  challenge: string;
-  participant: {
-    name: string;
-    avatar?: string;
-    email: string;
-  };
-  status: 'pending' | 'reviewed' | 'approved' | 'rejected';
-  score?: number;
-  submittedAt: string;
-  lastUpdated?: string;
-  feedback?: string;
-  tags?: string[];
-}
-
-const StatsCard = ({ stat, index }: StatsCardProps) => (
-  <motion.div
-    key={stat.label}
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ delay: index * 0.1 }}
-    className="bg-white rounded-xl p-4 lg:p-6 shadow-sm hover:shadow-md transition-all"
-  >
-    <div className="flex items-center justify-between mb-4">
-      <div className={`p-2 sm:p-3 rounded-xl ${stat.bg}`}>
-        <stat.icon className={`h-5 w-5 sm:h-6 sm:w-6 ${stat.color}`} />
-      </div>
-      <TrendingUp className="h-4 w-4 text-green-500" />
-    </div>
-    <p className="text-gray-600 text-xs sm:text-sm mb-1">{stat.label}</p>
-    <p className="text-2xl sm:text-3xl font-bold mb-2">{stat.value}</p>
-    <p className="text-green-500 text-xs sm:text-sm flex items-center">
-      <Activity className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
-      {stat.change}
-    </p>
-  </motion.div>
-);
-
-const ChallengeCard = ({ challenge, index }: ChallengeCardProps) => (
-  <motion.div
-    key={challenge.id}
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ delay: index * 0.1 }}
-    className="bg-white rounded-xl p-4 lg:p-6 shadow-sm hover:shadow-md transition-all"
-  >
-    <div className="flex flex-col lg:flex-row lg:items-start space-y-4 lg:space-y-0 lg:space-x-4">
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center space-x-3 mb-3">
-          <div className="p-2 bg-primary/10 rounded-lg flex-shrink-0">
-            <FileText className="h-5 w-5 text-primary" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <h3 className="font-medium text-lg truncate">{challenge.title}</h3>
-            <p className="text-sm text-gray-600 line-clamp-2">{challenge.description}</p>
-          </div>
-        </div>
-        <div className="flex flex-wrap gap-2 mb-3">
-          {challenge.categories.map((category) => (
-            <Badge key={category} variant="secondary" className="bg-primary/10 text-primary">
-              {category}
-            </Badge>
-          ))}
-        </div>
-      </div>
-      <div className="flex flex-row lg:flex-col items-center lg:items-end justify-between lg:justify-start space-y-0 lg:space-y-2">
-        <Badge 
-          variant="secondary"
-          className={cn(
-            "rounded-lg px-3 py-1",
-            challenge.status === 'active' 
-              ? 'bg-green-100 text-green-700' 
-              : 'bg-blue-100 text-blue-700'
-          )}
-        >
-          {challenge.status.charAt(0).toUpperCase() + challenge.status.slice(1)}
-        </Badge>
-        <p className="text-primary font-semibold">{challenge.prize}</p>
-      </div>
-    </div>
-    <div className="mt-4 pt-4 border-t border-gray-200">
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div>
-          <p className="text-sm text-gray-500">Participants</p>
-          <p className="font-medium">{challenge.participants}</p>
-        </div>
-        <div>
-          <p className="text-sm text-gray-500">Submissions</p>
-          <p className="font-medium">{challenge.submissions}</p>
-        </div>
-        <div>
-          <p className="text-sm text-gray-500">Time Left</p>
-          <p className="font-medium">{challenge.daysLeft} days</p>
-        </div>
-        <div className="col-span-2 sm:col-span-1">
-          <p className="text-sm text-gray-500">Progress</p>
-          <div className="w-full h-2 bg-gray-200 rounded-full mt-1">
-            <div 
-              className="h-full bg-primary rounded-full transition-all duration-300"
-              style={{ width: `${challenge.progress}%` }}
-            />
-          </div>
-        </div>
-      </div>
-    </div>
-  </motion.div>
-);
-
-const MobileTabNav = ({ activeView, setActiveView }: MobileTabNavProps) => (
-  <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-40 px-1 pb-safe">
-    <div className="flex justify-around py-1">
-      {[
-        { icon: LayoutDashboard, label: 'Overview', value: 'overview' },
-        { icon: FileText, label: 'Challenges', value: 'challenges' },
-        { icon: Users, label: 'Submissions', value: 'submissions' },
-        { icon: Settings, label: 'Settings', value: 'settings' }
-      ].map(tab => (
-        <button
-          key={tab.value}
-          onClick={() => setActiveView(tab.value)}
-          className={`flex flex-col items-center p-2 rounded-lg ${
-            activeView === tab.value ? 'text-primary' : 'text-gray-600'
-          }`}
-        >
-          <tab.icon className="h-5 w-5" />
-          <span className="text-xs mt-1">{tab.label}</span>
-        </button>
-      ))}
-    </div>
-  </div>
-);
-
-const ProfileDropdown = ({ user, onSignOut }: ProfileDropdownProps) => {
-  const [isOpen, setIsOpen] = useState(false);
-
-  return (
-    <div className="relative">
-      <Button 
-        variant="ghost" 
-        size="sm"
-        className="rounded-full"
-        onClick={() => setIsOpen(!isOpen)}
-      >
-        <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center">
-          <span className="text-primary font-semibold text-sm">
-            {user?.fullName?.[0] || 'A'}
-          </span>
-        </div>
-      </Button>
-
-      {isOpen && (
-        <>
-          <div 
-            className="fixed inset-0 z-30" 
-            onClick={() => setIsOpen(false)}
-          />
-          <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-100 py-1 z-40">
-            <div className="px-4 py-2 border-b border-gray-100">
-              <p className="font-medium truncate">{user?.fullName}</p>
-              <p className="text-xs text-gray-500 truncate">{user?.email}</p>
-            </div>
-            <button
-              onClick={() => {
-                setIsOpen(false);
-                onSignOut();
-              }}
-              className="w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center"
-            >
-              <LogOut className="h-4 w-4 mr-2" />
-              Sign Out
-            </button>
-          </div>
-        </>
-      )}
-    </div>
-  );
-};
-
-const Header = ({ user, onSignOut }: HeaderProps) => (
-  <div className={cn(
-    "lg:hidden fixed top-0 left-0 right-0 z-40 bg-white/80 backdrop-blur-md",
-    "border-b border-gray-200 px-3 py-2"
-  )}>
-    <div className="flex items-center justify-between gap-2">
-      <Link to="/" className="flex items-center gap-1.5">
-        <div className="p-1.5 bg-primary/10 rounded-lg">
-          <Sparkles className="h-4 w-4 text-primary" />
-        </div>
-        <span className="font-semibold text-base">Qiesto</span>
-      </Link>
-      
-      <div className="flex items-center gap-1">
-        <NotificationsDropdown />
-        <ProfileDropdown user={user} onSignOut={onSignOut} />
-      </div>
-    </div>
-  </div>
-);
-
-const WelcomeSection = ({ user }) => (
-  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 lg:gap-8 mb-6">
-    <motion.div
-      initial={{ opacity: 0, y: -20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: "easeOut" }}
-      className="space-y-2"
-    >
-      <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight">
-        Welcome {user?.fullName || 'Admin'}!
-      </h1>
-      <p className="text-gray-600 text-sm lg:text-base">
-        Here's what's happening with your challenges
-      </p>
-    </motion.div>
-  </div>
-);
-
-const SearchBar = ({ searchQuery, setSearchQuery, selectedFilter, setSelectedFilter }: SearchBarProps) => (
-  <div className="flex flex-col sm:flex-row gap-4 mb-6">
-    <div className="relative flex-1">
-      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-      <Input
-        placeholder="Search..."
-        value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
-        className="pl-10 w-full"
-      />
-    </div>
-    <select
-      value={selectedFilter}
-      onChange={(e) => setSelectedFilter(e.target.value)}
-      className="border border-gray-200 rounded-lg px-3 py-2 text-sm w-full sm:w-auto"
-    >
-      <option value="all">All Status</option>
-      <option value="active">Active</option>
-      <option value="draft">Draft</option>
-      <option value="completed">Completed</option>
-    </select>
-  </div>
-);
-
-const NewChallengeForm = ({ challenge, setChallenge, onSubmit, onClose }: NewChallengeFormProps) => {
-  return (
-    <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Create New Challenge</DialogTitle>
-        </DialogHeader>
-        <form onSubmit={onSubmit} className="space-y-4">
-          {/* Add form fields */}
-        </form>
-      </DialogContent>
-    </Dialog>
-  );
-};
-
-const LoadingScreen = () => (
-  <div className="min-h-screen bg-gray-50/50 flex items-center justify-center px-4">
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="flex flex-col items-center text-center"
-    >
-      <div className="relative mb-4">
-        <div className="h-12 w-12 rounded-full border-4 border-primary/30 border-t-primary animate-spin" />
-        <Sparkles className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-5 w-5 text-primary" />
-      </div>
-      <h2 className="text-xl font-semibold mb-2">Loading your dashboard</h2>
-      <p className="text-sm text-gray-500">Please wait while we fetch your data...</p>
-    </motion.div>
-  </div>
-);
+import StatsCard from '@/components/dashboard/StatsCard';
+import LoadingScreen from '@/components/dashboard/LoadingScreen';
+import ChallengeCard from '@/components/dashboard/ChallengeCard';
+import WelcomeSection from '@/components/dashboard/WelcomeSection';
+import MobileHeader from '@/components/dashboard/MobileHeader';
+import MobileTabNav from '@/components/dashboard/MobileTabNav';
+import NewChallengeForm from '@/components/dashboard/NewChallengeForm';
+import SearchBar from '@/components/dashboard/SearchBar';
 
 const PartnerDashboard = () => {
   const [activeView, setActiveView] = useState('overview');
@@ -401,21 +67,10 @@ const PartnerDashboard = () => {
     status: 'pending'
   });
 
-  const [isScrolled, setIsScrolled] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 0);
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
   const handleSignOut = async () => {
     try {
-      // await signOut();
-      navigate('/signin');
+      await signOut();
+      navigate('/');
     } catch (error) {
       console.error('Error signing out:', error);
     }
@@ -463,7 +118,7 @@ const PartnerDashboard = () => {
     }
   ];
 
-  const challenges: Challenge[] = [
+  const challenges = [
     {
       id: '1',
       title: 'AI Innovation Challenge 2024',
@@ -498,7 +153,7 @@ const PartnerDashboard = () => {
     }
   ];
 
-  const submissions: Submission[] = [
+  const submissions = [
     {
       id: '1',
       title: 'AI Healthcare Assistant',
@@ -512,7 +167,8 @@ const PartnerDashboard = () => {
       status: 'pending',
       submittedAt: '2024-03-15T10:30:00Z',
       lastUpdated: '2024-03-15T10:30:00Z',
-      tags: ['AI', 'Healthcare', 'Python']
+      tags: ['AI', 'Healthcare', 'Python'],
+      score: 0
     },
     {
       id: '2',
@@ -527,7 +183,8 @@ const PartnerDashboard = () => {
       status: 'pending',
       submittedAt: '2024-03-15T10:30:00Z',
       lastUpdated: '2024-03-15T10:30:00Z',
-      tags: ['AI', 'Healthcare', 'Python']
+      tags: ['AI', 'Healthcare', 'Python'],
+      score: 0
     },
   ];
 
@@ -844,11 +501,11 @@ const PartnerDashboard = () => {
                           >
                             {submission.status.charAt(0).toUpperCase() + submission.status.slice(1)}
                           </Badge>
-                          {submission.score && (
+                          {/* {submission.score && (
                             <div className="text-sm text-gray-500 mt-1">
                               Score: {submission.score}/100
                             </div>
-                          )}
+                          )} */}
                         </td>
                         <td className="px-6 py-4">
                           <div className="text-sm text-gray-900">
@@ -1114,7 +771,7 @@ const PartnerDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-50/50">
-      <Header 
+      <MobileHeader
         user={user}
         onSignOut={handleSignOut}
       />
