@@ -14,7 +14,7 @@ const MobileHeader = ({ user, onSignOut }) => (
           <div className="p-1.5 bg-primary/10 rounded-lg">
             <Sparkles className="h-4 w-4 text-primary" />
           </div>
-          <span className="font-semibold text-base">Qiesto</span>
+          <span className="font-semibold text-base">GenLink</span>
         </Link>
         
         <div className="flex items-center gap-1">

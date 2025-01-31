@@ -70,7 +70,7 @@ const PartnerPending = () => {
             <Sparkles className="h-6 w-6 text-primary" />
           </div>
           <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
-            Qiesto
+            GenLink
           </h1>
         </Link>
 

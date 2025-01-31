@@ -38,7 +38,7 @@ const Logo = () => {
           <motion.span 
             className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-400 via-gray-500 to-gray-200"
           >
-            Qiesto
+            GenLink
           </motion.span>
           {/* <motion.span 
             className="text-xs text-gray-500 font-medium tracking-wider"

@@ -1,17 +1,16 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { auth } from '@/lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
-import { getCurrentUser } from '@/services/auth';
 import { User } from '@/types/user';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
 export interface AuthUser extends User {
   uid: any;
-  userType: 'partner' | 'participant';
+  userType: 'partner' | 'participant' | 'admin';
   status?: 'pending' | 'approved';
   fullName?: string;
-  role?: 'partner' | 'participant';
+  role?: 'partner' | 'participant' | 'admin';
 }
 
 interface AuthContextType {

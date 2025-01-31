@@ -32,6 +32,24 @@ export const signIn = async ({ email, password }: SignInCredentials) => {
   }
 };
 
+// admin sign in
+
+export const AdminSignIn = async ({ email, password }: SignInCredentials) => {
+  try {
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+    const userDoc = await getDoc(doc(db, 'profiles', user.uid));
+    const profile = userDoc.data();
+    if (profile?.user_type !== 'admin') {
+      throw new Error('Unauthorized access');
+    }
+    return { user: { ...user, role: profile?.user_type} };
+  } catch (error) {
+    console.error('SignIn error:', error);
+    throw error;
+  }
+};
+
 export const signUp = async ({ email, password, fullName, userType, organization, position }: SignUpCredentials) => {
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);

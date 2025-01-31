@@ -144,7 +144,7 @@ export const Header = () => {
                 animate={{ opacity: 1, x: 0 }}
                 className="font-bold text-xl bg-gradient-to-r from-gray-900 via-gray-800 to-gray-600 bg-clip-text text-transparent"
               >
-                Qiesto
+                GenLink
               </motion.span>
             </Link>
 
