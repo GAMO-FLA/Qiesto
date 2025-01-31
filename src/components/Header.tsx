@@ -55,10 +55,22 @@ export const Header = () => {
       // Check if user is a partner and navigate accordingly
       if (user?.role === 'partner') {
         navigate('/partner-dashboard');
+      } if (user?.role === 'admin') {
+        navigate('/admin/dashboard');
       } else {
         navigate('/dashboard');
       }
     };
+
+    // const handleSettingsClick = () => {
+    //   if (user?.role === 'partner') {
+    //     navigate('/partner-dashboard');
+    //   } if (user?.role === 'admin') {
+    //     navigate('/admin/dashboard?view=settings');
+    //   } else {
+    //     navigate('/dashboard');
+    //   }
+    // };
 
     return (
       <DropdownMenu>
@@ -89,13 +101,13 @@ export const Header = () => {
             <LayoutDashboard className="w-4 h-4 mr-2" />
             Dashboard
           </DropdownMenuItem>
-          <DropdownMenuItem 
-            onClick={() => navigate('/dashboard?view=settings')}
+          {/* <DropdownMenuItem 
+            onClick={handleSettingsClick}
             className="rounded-lg cursor-pointer"
           >
             <Settings className="mr-2 h-4 w-4" />
             Settings
-          </DropdownMenuItem>
+          </DropdownMenuItem> */}
           <DropdownMenuSeparator />
           
           <DropdownMenuItem 

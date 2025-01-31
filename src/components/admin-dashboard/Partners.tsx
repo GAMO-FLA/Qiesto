@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { collection, getDocs, doc, updateDoc, runTransaction } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 import {
   Search,
   Filter,
@@ -26,37 +28,60 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import PartnerDetailsModal from './partners/PartnerDetailsModal';
 
-// Mock data - replace with API calls
-const MOCK_PARTNERS = [
-  {
-    id: '1',
-    name: 'TechCorp Solutions',
-    email: 'contact@techcorp.com',
-    status: 'pending',
-    type: 'Technology',
-    appliedDate: '2024-03-15',
-    location: 'New York, USA',
-    description: 'Leading technology solutions provider'
-  },
-  {
-    id: '2',
-    name: 'Green Energy Ltd',
-    email: 'info@greenenergy.com',
-    status: 'approved',
-    type: 'Energy',
-    appliedDate: '2024-03-14',
-    location: 'London, UK',
-    description: 'Sustainable energy solutions'
-  },
-  // Add more mock data as needed
-];
 
 const Partners = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [partners, setPartners] = useState(MOCK_PARTNERS);
+  const [partners, setPartners] = useState([]);
   const [selectedPartner, setSelectedPartner] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+
+  useEffect(() => {
+    const fetchPartners = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, 'organizations'));
+        const partnersData = querySnapshot.docs.map(doc => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            name: data.name || '',
+            email: data.email || '',
+            status: data.status || 'pending',
+            type: data.type || '',
+            appliedDate: data.created_at,
+            location: data.location || '',
+            description: data.description || '',
+            owner: data.created_by || ''
+          };
+        });
+        setPartners(partnersData);
+      } catch (err) {
+        setError(err.message);
+        console.error('Error fetching partners:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    fetchPartners();
+  }, []);
+
+  if (loading) return (
+    <div className="flex justify-center items-center h-64">
+      <div className="text-gray-500">Loading...</div>
+    </div>
+  );
+
+  if (error) return (
+    <div className="flex justify-center items-center h-64">
+      <div className="text-red-500">Error: {error}</div>
+    </div>
+  );
 
   const statusColors = {
     pending: 'text-yellow-500 bg-yellow-50',
@@ -72,11 +97,52 @@ const Partners = () => {
     suspended: AlertCircle
   };
 
+  const handlePartnerSelect = (partner) => {
+    setSelectedPartner(partner);
+    setIsModalOpen(true);
+  };
+
   const handleStatusChange = async (partnerId: string, newStatus: string) => {
-    // API call would go here
-    setPartners(partners.map(partner => 
-      partner.id === partnerId ? { ...partner, status: newStatus } : partner
-    ));
+    try {
+      await runTransaction(db, async (transaction) => {
+        // Get organization doc
+        const orgRef = doc(db, 'organizations', partnerId);
+        const orgDoc = await transaction.get(orgRef);
+        
+        if (!orgDoc.exists()) {
+          throw new Error('Organization not found');
+        }
+  
+        // Get profile doc using created_by
+        const createdBy = orgDoc.data().created_by;
+        const profileRef = doc(db, 'profiles', createdBy);
+        const profileDoc = await transaction.get(profileRef);
+  
+        if (!profileDoc.exists()) {
+          throw new Error('Profile not found');
+        }
+  
+        // Update both documents
+        transaction.update(orgRef, { 
+          status: newStatus,
+          updated_at: new Date()
+        });
+  
+        transaction.update(profileRef, { 
+          status: newStatus,
+          updated_at: new Date()
+        });
+      });
+  
+      // Update local state
+      setPartners(partners.map(partner => 
+        partner.id === partnerId ? { ...partner, status: newStatus } : partner
+      ));
+  
+    } catch (error) {
+      console.error('Error updating status:', error);
+      setError(error.message);
+    }
   };
 
   const filteredPartners = partners.filter(partner => {
@@ -175,10 +241,10 @@ const Partners = () => {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem>
-                            <Eye className="mr-2 h-4 w-4" />
-                            View Details
-                          </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handlePartnerSelect(partner)}>
+                          <Eye className="mr-2 h-4 w-4" />
+                          View Details
+                        </DropdownMenuItem>
                           {partner.status === 'pending' && (
                             <>
                               <DropdownMenuItem onClick={() => handleStatusChange(partner.id, 'approved')}>
@@ -207,6 +273,14 @@ const Partners = () => {
           </table>
         </div>
       </div>
+      {selectedPartner && (
+        <PartnerDetailsModal
+          partner={selectedPartner}
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          statusColors={statusColors}
+        />
+      )}
     </div>
   );
 };

@@ -33,3 +33,14 @@ export interface Challenge {
   createdAt: string;
   updatedAt: string;
 } 
+
+export interface Partner {
+  id: string;
+  name: string;
+  email: string;
+  status: string;
+  type: string;
+  appliedDate: string;
+  location: string;
+  description: string;
+}

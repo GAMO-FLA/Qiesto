@@ -2,7 +2,7 @@ import { auth, db } from '@/lib/firebase';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut as firebaseSignOut, Auth } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { User } from '@/types/user';
-import { AuthUser } from '@/contexts/AuthContext';
+import { v4 as uuidv4 } from 'uuid';
 
 export type SignInCredentials = {
   email: string;
@@ -32,8 +32,6 @@ export const signIn = async ({ email, password }: SignInCredentials) => {
   }
 };
 
-// admin sign in
-
 export const AdminSignIn = async ({ email, password }: SignInCredentials) => {
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
@@ -50,18 +48,57 @@ export const AdminSignIn = async ({ email, password }: SignInCredentials) => {
   }
 };
 
-export const signUp = async ({ email, password, fullName, userType, organization, position }: SignUpCredentials) => {
+export const signUp = async ({ 
+  email, 
+  password, 
+  fullName, 
+  userType, 
+  organization, 
+  position 
+}: SignUpCredentials) => {
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
+    
+    let organizationId: string | undefined;
+
+    if (userType === 'partner' && organization) {
+      // Generate org ID
+      organizationId = uuidv4();
+      
+      // Create organization record
+      await setDoc(doc(db, 'organizations', organizationId), {
+        id: organizationId,
+        name: organization,
+        logo_url: '',
+        type: 'Company',
+        address: '',
+        email: email,
+        phone: '',
+        status: 'pending',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        created_by: user.uid
+      });
+    }
+
+    // Create user profile with org reference
     await setDoc(doc(db, 'profiles', user.uid), {
       full_name: fullName,
       user_type: userType,
       status: userType === 'partner' ? 'pending' : 'approved',
+      ...(organizationId && { organization_id: organizationId }),
       ...(organization && { organization }),
       ...(position && { position }),
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
     });
-    return { ...user, userType };
+
+    return { 
+      ...user, 
+      userType,
+      ...(organizationId && { organizationId })
+    };
   } catch (error) {
     console.error('SignUp error:', error);
     throw error;

@@ -1,14 +1,11 @@
-import { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { signOut } from '@/services/auth';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { 
   LayoutDashboard, Users, Shield, Settings, LogOut, 
-  MessagesSquare, BarChart, Building2, Timer,
-  ChevronRight, Search, ArrowUpRight, CheckCircle, XCircle
+  MessagesSquare, BarChart, Building2
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from "@/lib/utils";
@@ -20,12 +17,12 @@ import Communities from '@/components/admin-dashboard/Communities';
 import Support from '@/components/admin-dashboard/Support';
 import Analytics from '@/components/admin-dashboard/Analytics';
 import SettingsPanel from '@/components/admin-dashboard/SettingsPanel';
+import AdminMobileTabNav from '@/components/admin-dashboard/AdminMobileTabNav';
 
 const AdminDashboard = () => {
   const { user: authUser, loading } = useAuth();
   const navigate = useNavigate();
   const [activeView, setActiveView] = useState('overview');
-  const [searchQuery, setSearchQuery] = useState('');
 
   const MENU_ITEMS = [
     {
@@ -117,11 +114,12 @@ const AdminDashboard = () => {
       />
 
       <aside className={cn(
-        "fixed left-0 top-0 h-screen bg-zinc-900 border-r border-zinc-800 z-50",
+        "fixed left-0 top-0 h-screen bg-slate-900 border-r border-slate-800 z-50",
         "w-72 hidden lg:block"
       )}>
         <div className="flex flex-col h-full">
-          <div className="p-6 border-b border-zinc-800">
+          {/* Dark theme sidebar content */}
+          <div className="p-6 border-b border-slate-800">
             <Link to="/" className="flex items-center space-x-2">
               <div className="p-2 bg-primary/10 rounded-xl">
                 <Shield className="h-6 w-6 text-primary" />
@@ -131,12 +129,12 @@ const AdminDashboard = () => {
               </h1>
             </Link>
           </div>
-          
+
           <nav className="flex-1 p-4">
             <div className="space-y-6">
               {MENU_ITEMS.map((menu) => (
                 <div key={menu.label}>
-                  <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-4 mb-2">
+                  <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider px-4 mb-2">
                     {menu.label}
                   </div>
                   {menu.items.map((item) => (
@@ -144,9 +142,10 @@ const AdminDashboard = () => {
                       key={item.text}
                       variant="ghost" 
                       className={cn(
-                        "w-full justify-start mb-1",
-                        "text-gray-300 hover:text-white hover:bg-white/10",
-                        activeView === item.text.toLowerCase() && "bg-white/10 text-white"
+                        "w-full justify-start mb-1 rounded-xl",
+                        activeView === item.text.toLowerCase() 
+                          ? 'text-primary bg-primary/10'
+                          : 'text-slate-300 hover:text-white hover:bg-slate-800'
                       )}
                       onClick={item.action}
                     >
@@ -159,8 +158,9 @@ const AdminDashboard = () => {
             </div>
           </nav>
 
-          <div className="p-4 border-t border-zinc-800">
-            <div className="rounded-xl p-4 bg-white/5">
+          <div className="p-4 border-t border-slate-800">
+            <div className="bg-slate-800 rounded-xl p-4">
+              {/* User profile section */}
               <div className="flex items-center space-x-3 mb-3">
                 <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
                   <span className="text-primary font-semibold">
@@ -168,8 +168,8 @@ const AdminDashboard = () => {
                   </span>
                 </div>
                 <div>
-                  <p className="font-medium text-white">Admin</p>
-                  <p className="text-sm text-gray-400">{authUser?.email}</p>
+                  <p className="font-medium text-white">{authUser?.fullName || 'Admin'}</p>
+                  <p className="text-sm text-slate-400">{authUser?.email}</p>
                 </div>
               </div>
               <Button
@@ -189,12 +189,17 @@ const AdminDashboard = () => {
         "transition-all duration-200 ease-in-out",
         "lg:ml-72",
         "px-4 sm:px-6 lg:px-8",
-        "py-8"
+        "pt-14 pb-20 lg:pb-12"
       )}>
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-7xl mx-auto my-4">
           {renderMainContent()}
         </div>
       </main>
+
+      <AdminMobileTabNav 
+        activeView={activeView} 
+        setActiveView={setActiveView} 
+      />
     </div>
   );
 };

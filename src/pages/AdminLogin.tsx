@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Link, useNavigate } from 'react-router-dom';
-import { signIn } from '@/services/auth';
+import { AdminSignIn } from '@/services/auth';
 import { toast } from 'sonner';
 import { Shield, Mail, Lock, ArrowRight } from 'lucide-react';
 
@@ -21,7 +21,7 @@ const AdminLogin = () => {
 
     try {
       console.log('Attempting admin sign in...');
-      const { user } = await signIn({ email, password });
+      const { user } = await AdminSignIn({ email, password });
       console.log('Admin sign in successful, user:', user);
       
       if (!user || user.role !== 'admin') {
