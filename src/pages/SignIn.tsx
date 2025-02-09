@@ -6,7 +6,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { signIn } from '@/services/auth';
 import { toast } from 'sonner';
 import { Sparkles, Mail, Lock, ArrowRight } from 'lucide-react';
-import { set } from 'date-fns';
+import { signOut } from '@/services/auth';
+import Logo from '@/components/Logo';
 
 const SignIn = () => {
   const [email, setEmail] = useState('');
@@ -31,6 +32,7 @@ const SignIn = () => {
 
       if (user.role === 'partner') {
         if (user.status === 'pending') {
+          await signOut();
           navigate('/partner-pending');
         } else {
           navigate('/partner-dashboard');
@@ -62,14 +64,7 @@ const SignIn = () => {
           className="w-full max-w-md z-10 my-auto"
         >
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2 mb-12">
-            <div className="p-2 bg-primary/10 rounded-xl">
-              <Sparkles className="h-6 w-6 text-primary" />
-            </div>
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
-              GenLink
-            </h1>
-          </Link>
+          <Logo class_name="flex items-center space-x-2 mb-12" />
 
           {/* Welcome Text */}
           <div className="mb-8">

@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { signOut } from '@/services/auth';
+import Logo from '@/components/Logo';
 
 const steps = [
   {
@@ -65,14 +66,7 @@ const PartnerPending = () => {
         <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent" />
         
         {/* Logo */}
-        <Link to="/" className="absolute top-8 left-8 flex items-center space-x-2">
-          <div className="p-2 bg-primary/10 rounded-xl">
-            <Sparkles className="h-6 w-6 text-primary" />
-          </div>
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
-            GenLink
-          </h1>
-        </Link>
+        <Logo class_name="absolute top-8 left-8 flex items-center space-x-2" />
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}

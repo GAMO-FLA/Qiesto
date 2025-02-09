@@ -39,27 +39,30 @@ export const Footer = () => {
   return (
     <footer className="border-t border-gray-100 bg-gradient-to-b from-white to-gray-50/50">
       <div className="container mx-auto px-4 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-16">
           {/* Brand Section */}
-          <div className="lg:col-span-2 space-y-6">
-            <Logo />
-            <p className="text-gray-600 text-sm leading-relaxed max-w-sm">
+          <div className="lg:col-span-2 space-y-8">
+            <div className="flex items-start">
+              <Logo class_name="transform hover:scale-105 transition-transform duration-300" />
+            </div>
+            <p className="text-gray-600 text-base leading-relaxed max-w-md">
               Empowering innovation across East Africa through our cutting-edge 
-              challenge platform. Join us in building the future.
+              challenge platform. Join us in building the future, one solution at a time.
             </p>
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center gap-4">
               {socialLinks.map((social, i) => (
-                <motion.a
-                  key={i}
-                  href={social.href}
-                  aria-label={social.label}
-                  whileHover={{ y: -2 }}
-                  className="p-2.5 rounded-xl hover:bg-white text-gray-600 hover:text-primary 
-                    transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 border
-                    border-transparent hover:border-gray-100"
-                >
-                  <social.icon className="h-5 w-5" />
-                </motion.a>
+          <motion.a
+            key={i}
+            href={social.href}
+            aria-label={social.label}
+            whileHover={{ y: -4, scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+            className="p-3 rounded-2xl bg-gray-50 text-gray-600 hover:text-primary 
+              transition-all duration-300 hover:shadow-xl hover:shadow-primary/10 border
+              border-gray-100 hover:border-primary/20"
+          >
+            <social.icon className="h-5 w-5" />
+          </motion.a>
               ))}
             </div>
           </div>

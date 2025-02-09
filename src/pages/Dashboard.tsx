@@ -22,6 +22,7 @@ import MobileTabNav from '@/components/dashboard/MobileTabNav';
 import WelcomeSection from '@/components/dashboard/WelcomeSection';
 import LoadingScreen from '@/components/dashboard/LoadingScreen';
 import StatsCard from '@/components/dashboard/StatsCard';
+import Logo from '@/components/Logo';
 
 const Dashboard = () => {
   const { user: authUser, loading } = useAuth();
@@ -487,16 +488,7 @@ const Dashboard = () => {
           "w-72 hidden lg:block"
         )}>
           <div className="flex flex-col h-full">
-            <div className="p-6 border-b border-gray-100">
-              <Link to="/" className="flex items-center space-x-2">
-                <div className="p-2 bg-primary/10 rounded-xl">
-                  <Sparkles className="h-6 w-6 text-primary" />
-                </div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
-                  GenLink
-                </h1>
-              </Link>
-            </div>
+            <Logo class_name="ml-4" />
             
             <nav className="flex-1 p-4">
               <div className="space-y-2">
@@ -551,7 +543,7 @@ const Dashboard = () => {
           </div>
         </aside>
         <main className={cn(
-          "transition-all duration-200 ease-in-out",
+          "transition-all duration-200 mt-5 ease-in-out",
           "lg:ml-72",
           "px-3 sm:px-6 lg:px-8",
           "pt-14 pb-20 lg:pb-12",

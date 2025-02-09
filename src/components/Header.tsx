@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { toast } from 'sonner';
 import { signOut } from '@/services/auth';
+import Logo from './Logo';
 
 const navItems = [
   { label: 'Challenges', path: '/challenges' },
@@ -138,27 +139,8 @@ export const Header = () => {
       />
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          <div className="flex items-center space-x-12">
-            <Link 
-              to="/"
-              className="flex items-center space-x-3 group"
-            >
-              <motion.div
-                initial={{ opacity: 1, scale: 1, rotate: 0 }}
-                animate={{ opacity: 1, scale: 1, rotate: 0 }}
-                transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                className="w-10 h-10 bg-gradient-to-br from-primary via-primary/90 to-blue-500 rounded-xl flex items-center justify-center shadow-lg shadow-primary/25 group-hover:shadow-primary/40 transition-all duration-300 group-hover:scale-105"
-              >
-                <Sparkles className="h-5 w-5 text-white transform group-hover:rotate-12 transition-transform" />
-              </motion.div>
-              <motion.span 
-                initial={{ opacity: 1, x: 0 }}
-                animate={{ opacity: 1, x: 0 }}
-                className="font-bold text-xl bg-gradient-to-r from-gray-900 via-gray-800 to-gray-600 bg-clip-text text-transparent"
-              >
-                GenLink
-              </motion.span>
-            </Link>
+          <div className="flex items-center space-x-12 h-full">
+           <Logo />
 
             {/* Navigation Items */}
             

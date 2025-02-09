@@ -23,6 +23,7 @@ import MobileHeader from '@/components/dashboard/MobileHeader';
 import MobileTabNav from '@/components/dashboard/MobileTabNav';
 import NewChallengeForm from '@/components/dashboard/NewChallengeForm';
 import SearchBar from '@/components/dashboard/SearchBar';
+import Logo from '@/components/Logo';
 
 const PartnerDashboard = () => {
   const [activeView, setActiveView] = useState('overview');
@@ -781,16 +782,7 @@ const PartnerDashboard = () => {
         "w-72 hidden lg:block"
       )}>
         <div className="flex flex-col h-full">
-          <div className="p-6 border-b border-gray-100">
-            <Link to="/" className="flex items-center space-x-2">
-              <div className="p-2 bg-primary/10 rounded-xl">
-                <Sparkles className="h-6 w-6 text-primary" />
-              </div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
-                GenLink
-              </h1>
-            </Link>
-          </div>
+          <Logo class_name="ml-4" />
 
           <nav className="flex-1 p-4">
             <div className="space-y-6">

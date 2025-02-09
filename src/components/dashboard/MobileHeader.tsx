@@ -1,8 +1,7 @@
-import { Sparkles } from "lucide-react";
-import { Link } from 'react-router-dom';
 import { cn } from "@/lib/utils";
 import NotificationsDropdown from '@/components/dashboard/NotificationsDropdown';
 import ProfileDropdown from '@/components/dashboard/ProfileDropdown';
+import Logo from "../Logo";
 
 const MobileHeader = ({ user, onSignOut }) => (
     <div className={cn(
@@ -10,12 +9,7 @@ const MobileHeader = ({ user, onSignOut }) => (
       "border-b border-gray-200 px-3 py-2"
     )}>
       <div className="flex items-center justify-between gap-2">
-        <Link to="/" className="flex items-center gap-1.5">
-          <div className="p-1.5 bg-primary/10 rounded-lg">
-            <Sparkles className="h-4 w-4 text-primary" />
-          </div>
-          <span className="font-semibold text-base">GenLink</span>
-        </Link>
+        <Logo class_name=""/>
         
         <div className="flex items-center gap-1">
           <NotificationsDropdown />
